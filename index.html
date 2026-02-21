@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🎮 НЕОН-АРКАДА · 31 игра с подсказками</title>
-  <!-- Библиотеки: Tailwind, Font Awesome, GSAP, MediaPipe, дополнительно p5.js для некоторых игр (но будем использовать нативный JS) -->
+  <title>🎮 НЕОН-АРКАДА · все игры + жестовый Paint</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -14,7 +13,7 @@
     body {
       background: linear-gradient(145deg, #0a0f1e 0%, #1a1f33 100%);
       min-height: 100vh;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
     }
     .glass {
       background: rgba(20, 30, 50, 0.3);
@@ -69,40 +68,13 @@
       color: #aaf0ff;
       max-width: 600px;
     }
-    .color-picker {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin: 15px 0;
-    }
-    .color-circle {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      border: 3px solid white;
-      transition: 0.1s;
-      box-shadow: 0 0 10px currentColor;
-    }
-    .color-circle.active {
-      transform: scale(1.2);
-      border-color: cyan;
-      box-shadow: 0 0 25px cyan;
-    }
-    .tool-indicator {
-      background: rgba(0,0,0,0.6);
-      padding: 6px 20px;
-      border-radius: 40px;
-      border: 1px solid cyan;
-      color: white;
-      font-size: 1.2rem;
-    }
     .paint-container {
       position: relative;
       width: 100%;
       max-width: 800px;
       aspect-ratio: 4/3;
     }
-    .paint-container video, .paint-container canvas {
+    .paint-container video {
       position: absolute;
       top: 0;
       left: 0;
@@ -113,8 +85,57 @@
       transform: scaleX(-1);
     }
     .paint-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 1.5rem;
+      pointer-events: none;
+    }
+    #drawCanvas {
       z-index: 2;
       background-color: transparent;
+    }
+    #skeletonCanvas {
+      z-index: 3;
+      background-color: transparent;
+    }
+    .color-palette {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      background: rgba(0,0,0,0.5);
+      padding: 8px 16px;
+      border-radius: 40px;
+      backdrop-filter: blur(5px);
+      border: 1px solid cyan;
+      z-index: 4;
+    }
+    .color-swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      transition: 0.1s;
+      cursor: pointer;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .color-swatch.active {
+      transform: scale(1.2);
+      border-color: cyan;
+      box-shadow: 0 0 20px cyan;
+    }
+    .tool-indicator {
+      background: rgba(0,0,0,0.6);
+      padding: 6px 20px;
+      border-radius: 40px;
+      border: 1px solid cyan;
+      color: white;
+      font-size: 1.2rem;
     }
     .mobile-controls {
       display: flex;
@@ -130,9 +151,6 @@
       padding: 0.75rem 1.5rem;
       font-size: 1.5rem;
       min-width: 70px;
-    }
-    canvas, .game-board {
-      border-radius: 1.5rem;
     }
   </style>
 </head>
@@ -174,7 +192,6 @@
   let currentGameIndex = -1;
   const gameInstances = new Array(31).fill(null);
 
-  // ====================== УТИЛИТЫ ======================
   function addInstructions(container, text) {
     const instr = document.createElement('div');
     instr.className = 'instructions';
@@ -200,9 +217,266 @@
     container.appendChild(div);
   }
 
-  // ====================== ИГРЫ (ПОЛНОЦЕННЫЕ) ======================
+  // ====================== ЖЕСТОВЫЙ PAINT (индекс 30) ======================
+  function runGesturePaint(container) {
+    addInstructions(container, '🎨 Жесты: указательный палец — кисть; раскрытая ладонь — ластик; наведите палец на цвет и сделайте пинч (соедините с большим) для выбора.');
+
+    const mainDiv = document.createElement('div');
+    mainDiv.className = 'relative w-full max-w-4xl mx-auto';
+
+    const paintContainer = document.createElement('div');
+    paintContainer.className = 'paint-container';
+
+    const video = document.createElement('video');
+    video.setAttribute('autoplay', true);
+    video.setAttribute('playsinline', true);
+
+    const drawCanvas = document.createElement('canvas');
+    drawCanvas.id = 'drawCanvas';
+    const skeletonCanvas = document.createElement('canvas');
+    skeletonCanvas.id = 'skeletonCanvas';
+
+    paintContainer.appendChild(video);
+    paintContainer.appendChild(drawCanvas);
+    paintContainer.appendChild(skeletonCanvas);
+    mainDiv.appendChild(paintContainer);
+
+    const paletteDiv = document.createElement('div');
+    paletteDiv.className = 'color-palette';
+    const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#ffffff', '#000000'];
+    let currentColor = '#ff4444';
+    const swatches = [];
+    colors.forEach((c, i) => {
+      const swatch = document.createElement('div');
+      swatch.className = `color-swatch ${c === currentColor ? 'active' : ''}`;
+      swatch.style.backgroundColor = c;
+      swatch.dataset.color = c;
+      swatch.onclick = () => {
+        currentColor = c;
+        swatches.forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        document.getElementById('selected-color-show').innerText = c;
+      };
+      paletteDiv.appendChild(swatch);
+      swatches.push(swatch);
+    });
+    mainDiv.appendChild(paletteDiv);
+
+    const statusBar = document.createElement('div');
+    statusBar.className = 'flex justify-between items-center w-full mt-2';
+    statusBar.innerHTML = `
+      <div class="tool-indicator" id="tool-indicator"><i class="fas fa-paint-brush mr-2"></i>Кисть</div>
+      <div class="text-xl"><span id="selected-color-show">#ff4444</span> <i class="fas fa-palette ml-2"></i></div>
+    `;
+    mainDiv.appendChild(statusBar);
+
+    const btnDiv = document.createElement('div');
+    btnDiv.className = 'flex gap-4 mt-4';
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'back-btn';
+    clearBtn.innerHTML = '<i class="fas fa-trash mr-2"></i>Очистить';
+    clearBtn.onclick = () => {
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    };
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'back-btn';
+    saveBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Сохранить';
+    saveBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.download = 'paint.png';
+      a.href = drawCanvas.toDataURL();
+      a.click();
+    };
+    btnDiv.appendChild(clearBtn); btnDiv.appendChild(saveBtn);
+    mainDiv.appendChild(btnDiv);
+
+    container.appendChild(mainDiv);
+
+    const drawCtx = drawCanvas.getContext('2d');
+    const skeletonCtx = skeletonCanvas.getContext('2d');
+    drawCtx.lineWidth = 8;
+    drawCtx.lineCap = 'round';
+    drawCtx.strokeStyle = currentColor;
+
+    video.addEventListener('loadeddata', () => {
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      drawCanvas.width = w;
+      drawCanvas.height = h;
+      skeletonCanvas.width = w;
+      skeletonCanvas.height = h;
+    });
+
+    const hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    let lastX = null, lastY = null;
+    let currentTool = 'brush';
+
+    function getSwatchAreas() {
+      const w = drawCanvas.width;
+      const h = drawCanvas.height;
+      const paletteY = h - 60;
+      const swatchSize = 40;
+      const totalWidth = colors.length * (swatchSize + 8) - 8;
+      const startX = (w - totalWidth) / 2;
+      return colors.map((c, i) => ({
+        color: c,
+        x: startX + i * (swatchSize + 8),
+        y: paletteY,
+        size: swatchSize
+      }));
+    }
+
+    hands.onResults(results => {
+      if (!results.multiHandLandmarks?.length) {
+        lastX = lastY = null;
+        skeletonCtx.clearRect(0, 0, skeletonCanvas.width, skeletonCanvas.height);
+        return;
+      }
+
+      const landmarks = results.multiHandLandmarks[0];
+      const w = drawCanvas.width;
+      const h = drawCanvas.height;
+      if (w === 0 || h === 0) return;
+
+      const convertX = x => (1 - x) * w;
+      const convertY = y => y * h;
+
+      const indexTip = convertX(landmarks[8].x);
+      const indexTipY = convertY(landmarks[8].y);
+      const thumbTip = convertX(landmarks[4].x);
+      const thumbTipY = convertY(landmarks[4].y);
+      const palmX = convertX(landmarks[0].x);
+      const palmY = convertY(landmarks[0].y);
+
+      const indexMcpY = convertY(landmarks[5].y);
+      const indexExtended = indexTipY < indexMcpY - 20;
+
+      const middleTipY = convertY(landmarks[12].y);
+      const middleMcpY = convertY(landmarks[9].y);
+      const middleExtended = middleTipY < middleMcpY - 20;
+
+      const ringTipY = convertY(landmarks[16].y);
+      const ringMcpY = convertY(landmarks[13].y);
+      const ringExtended = ringTipY < ringMcpY - 20;
+
+      const pinkyTipY = convertY(landmarks[20].y);
+      const pinkyMcpY = convertY(landmarks[17].y);
+      const pinkyExtended = pinkyTipY < pinkyMcpY - 20;
+
+      const isPalmOpen = indexExtended && middleExtended && ringExtended && pinkyExtended;
+
+      const pinchDist = Math.hypot(indexTip - thumbTip, indexTipY - thumbTipY);
+      const isPinch = pinchDist < 30;
+
+      const areas = getSwatchAreas();
+      let hoveredColor = null;
+      for (let area of areas) {
+        if (indexTip >= area.x && indexTip <= area.x + area.size &&
+            indexTipY >= area.y && indexTipY <= area.y + area.size) {
+          hoveredColor = area.color;
+          break;
+        }
+      }
+
+      if (isPinch && hoveredColor) {
+        currentColor = hoveredColor;
+        swatches.forEach(sw => {
+          if (sw.dataset.color === currentColor) sw.classList.add('active');
+          else sw.classList.remove('active');
+        });
+        document.getElementById('selected-color-show').innerText = currentColor;
+      }
+
+      if (isPalmOpen) {
+        currentTool = 'eraser';
+        drawCtx.globalCompositeOperation = 'destination-out';
+        drawCtx.lineWidth = 40;
+      } else {
+        currentTool = 'brush';
+        drawCtx.globalCompositeOperation = 'source-over';
+        drawCtx.lineWidth = 10;
+        drawCtx.strokeStyle = currentColor;
+      }
+      document.getElementById('tool-indicator').innerHTML = currentTool === 'eraser' ?
+        '<i class="fas fa-eraser mr-2"></i>Ластик' : '<i class="fas fa-paint-brush mr-2"></i>Кисть';
+
+      let drawX, drawY;
+      if (currentTool === 'eraser') {
+        drawX = palmX;
+        drawY = palmY;
+      } else {
+        drawX = indexTip;
+        drawY = indexTipY;
+      }
+
+      if (lastX && lastY && !isPinch) {
+        drawCtx.beginPath();
+        drawCtx.moveTo(lastX, lastY);
+        drawCtx.lineTo(drawX, drawY);
+        drawCtx.stroke();
+      }
+      lastX = drawX;
+      lastY = drawY;
+
+      // Отрисовка скелета
+      skeletonCtx.clearRect(0, 0, w, h);
+      const connections = [
+        [0,1],[1,2],[2,3],[3,4], [0,5],[5,6],[6,7],[7,8],
+        [0,9],[9,10],[10,11],[11,12], [0,13],[13,14],[14,15],[15,16],
+        [0,17],[17,18],[18,19],[19,20], [5,9],[9,13],[13,17]
+      ];
+
+      skeletonCtx.beginPath();
+      for (let [a, b] of connections) {
+        const ax = convertX(landmarks[a].x);
+        const ay = convertY(landmarks[a].y);
+        const bx = convertX(landmarks[b].x);
+        const by = convertY(landmarks[b].y);
+        skeletonCtx.moveTo(ax, ay);
+        skeletonCtx.lineTo(bx, by);
+      }
+      skeletonCtx.strokeStyle = 'rgba(0,255,255,0.6)';
+      skeletonCtx.lineWidth = 3;
+      skeletonCtx.stroke();
+
+      for (let i = 0; i < landmarks.length; i++) {
+        const x = convertX(landmarks[i].x);
+        const y = convertY(landmarks[i].y);
+        skeletonCtx.beginPath();
+        skeletonCtx.arc(x, y, 4, 0, 2 * Math.PI);
+        skeletonCtx.fillStyle = i === 8 ? '#ff0' : '#0ff';
+        skeletonCtx.fill();
+      }
+
+      if (hoveredColor) {
+        const area = areas.find(a => a.color === hoveredColor);
+        if (area) {
+          skeletonCtx.strokeStyle = 'white';
+          skeletonCtx.lineWidth = 4;
+          skeletonCtx.strokeRect(area.x, area.y, area.size, area.size);
+        }
+      }
+    });
+
+    const camera = new Camera(video, {
+      onFrame: async () => { await hands.send({ image: video }); },
+      width: 640, height: 480
+    });
+    camera.start().catch(e => alert('Ошибка камеры: ' + e.message));
+
+    return () => { camera.stop(); hands.close(); };
+  }
+
+  // ====================== ОСТАЛЬНЫЕ ИГРЫ (полноценные, из предыдущего ответа) ======================
   const gameRunners = [
-    // 0 Крестики-нолики с компьютером
+    // 0 Крестики-нолики
     (container) => {
       addInstructions(container, 'Играйте за X. Компьютер ходит O. Нажмите на клетку.');
       let board = ['', '', '', '', '', '', '', '', ''];
@@ -230,7 +504,7 @@
       container.appendChild(div);
       return () => {};
     },
-    // 1 Змейка (управление стрелками/свайпами)
+    // 1 Змейка
     (container) => {
       addInstructions(container, 'Управляйте стрелками или кнопками. Съешьте красное, чтобы вырасти. Не врезайтесь в стены и себя.');
       const canvas = document.createElement('canvas');
@@ -365,13 +639,11 @@
 
       function draw() {
         ctx.clearRect(0,0,200,400);
-        // поле
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             if (board[r][c]) { ctx.fillStyle = '#0ff'; ctx.fillRect(c*20, r*20, 18, 18); }
           }
         }
-        // текущая фигура
         ctx.fillStyle = piece.color;
         for (let r = 0; r < piece.shape.length; r++) {
           for (let c = 0; c < piece.shape[0].length; c++) {
@@ -386,7 +658,7 @@
         if (e.key === 'ArrowLeft') { piece.x--; if (collision(piece)) piece.x++; }
         if (e.key === 'ArrowRight') { piece.x++; if (collision(piece)) piece.x--; }
         if (e.key === 'ArrowDown') { step(); }
-        if (e.key === 'ArrowUp') { // поворот
+        if (e.key === 'ArrowUp') {
           let rotated = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
           let prev = piece.shape;
           piece.shape = rotated;
@@ -634,7 +906,7 @@
       container.appendChild(div); container.appendChild(result);
       return () => {};
     },
-    // 9 Флиппер (просто переворот карточки)
+    // 9 Флиппер
     (container) => {
       addInstructions(container, 'Нажмите на карточку, чтобы перевернуть. Игра на память.');
       const card = document.createElement('div');
@@ -645,7 +917,7 @@
       container.appendChild(card);
       return () => {};
     },
-    // 10 Мемори (уже реализован, улучшим)
+    // 10 Мемори
     (container) => {
       addInstructions(container, 'Найдите пары одинаковых карточек.');
       let cards = ['🐶','🐱','🐭','🐹','🐶','🐱','🐭','🐹']; cards.sort(()=>Math.random()-0.5);
@@ -676,14 +948,14 @@
       container.appendChild(grid);
       return () => {};
     },
-    // 11 Пасьянс (упрощенно, просто текст)
+    // 11 Пасьянс (упрощённо)
     (container) => {
       addInstructions(container, 'Пасьянс "Косынка" в демо-версии. (Перетаскивание не реализовано)');
       const div = document.createElement('div'); div.className = 'text-2xl'; div.innerText = '🃏 Пасьянс (упрощённо)';
       container.appendChild(div);
       return () => {};
     },
-    // 12 Гонки (уклонение)
+    // 12 Гонки
     (container) => {
       addInstructions(container, 'Управляйте стрелками влево/вправо, уклоняйтесь от красных машин.');
       const canvas = document.createElement('canvas'); canvas.width = 200; canvas.height = 400;
@@ -698,7 +970,6 @@
         if (frame % 30 === 0) { obstacles.push({ x: Math.random() * 160, y: 0 }); }
         obstacles.forEach((o, i) => { o.y += 5; ctx.fillStyle = 'red'; ctx.fillRect(o.x, o.y, 40, 40); });
         obstacles = obstacles.filter(o => o.y < 400);
-        // столкновение
         obstacles.forEach(o => {
           if (o.y + 40 > 350 && o.y < 390 && o.x < player.x + 40 && o.x + 40 > player.x) {
             alert('Столкновение! Счёт: ' + score); clearInterval(interval);
@@ -727,7 +998,6 @@
         if (bird.y > 400) { alert('Проигрыш'); clearInterval(interval); }
         if (frame % 60 === 0) pipes.push({ x: 300, gapY: Math.random() * 300 });
         pipes.forEach(p => p.x -= 3);
-        // collision
         pipes.forEach(p => {
           if (bird.y < p.gapY || bird.y > p.gapY + 100) {
             if (p.x < 80 && p.x + 40 > 50) { alert('Столкновение! Счёт: ' + score); clearInterval(interval); }
@@ -744,7 +1014,7 @@
       window.addEventListener('click', () => bird.vy = -8);
       return () => clearInterval(interval);
     },
-    // 14 Шахматы (только пешки, упрощённо)
+    // 14 Шахматы (пешки)
     (container) => {
       addInstructions(container, 'Передвигайте фигуры (демо). Белые снизу.');
       const board = [];
@@ -764,7 +1034,6 @@
       addInstructions(container, 'Шашки (упрощённо). Перемещайте фишки (демо).');
       const board = [];
       for (let i = 0; i < 8; i++) board[i] = Array(8).fill('');
-      // начальная расстановка
       for (let r = 0; r < 3; r++) for (let c = (r % 2); c < 8; c += 2) board[r][c] = '●';
       for (let r = 5; r < 8; r++) for (let c = (r % 2); c < 8; c += 2) board[r][c] = '○';
       const div = document.createElement('div'); div.className = 'grid grid-cols-8 gap-1 w-96';
@@ -776,7 +1045,7 @@
       container.appendChild(div);
       return () => {};
     },
-    // 16 Судоку (простая головоломка 4x4)
+    // 16 Судоку (4x4)
     (container) => {
       addInstructions(container, 'Заполните цифры от 1 до 4 так, чтобы не повторялись в строке, столбце и квадрате.');
       let puzzle = [
@@ -838,7 +1107,7 @@
       draw();
       return () => {};
     },
-    // 19 Jump Game (платформер)
+    // 19 Jump Game
     (container) => {
       addInstructions(container, 'Нажимайте пробел, чтобы прыгать. Доберитесь до платформы.');
       const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 200;
@@ -1029,7 +1298,7 @@
       container.appendChild(btn); container.appendChild(result);
       return () => {};
     },
-    // 26 Угадай мелодию (имитация через Web Audio)
+    // 26 Угадай мелодию (имитация)
     (container) => {
       addInstructions(container, 'Прослушайте ноту и угадайте её название (до, ре, ми...).');
       const notes = ['до', 'ре', 'ми', 'фа', 'соль', 'ля', 'си'];
@@ -1057,7 +1326,7 @@
       container.appendChild(playBtn); container.appendChild(input); container.appendChild(checkBtn);
       return () => audioCtx.close();
     },
-    // 27 Пятнашки (уже есть, улучшено)
+    // 27 Пятнашки
     (container) => {
       addInstructions(container, 'Нажимайте на клетки рядом с пустой, чтобы переместить.');
       let tiles = [1,2,3,4,5,6,7,8,0];
@@ -1140,114 +1409,8 @@
       container.appendChild(div);
       return () => {};
     },
-    // 30 Жестовый Paint (как ранее, с подсказкой)
-    (container) => {
-      addInstructions(container, '🎨 Жесты: указательный палец — кисть; раскрытая ладонь — ластик; пинч над цветом — выбор цвета (пока не реализован).');
-      // ... (код Paint из предыдущего ответа, сокращен для места)
-      const paintDiv = document.createElement('div');
-      paintDiv.className = 'flex flex-col items-center w-full';
-      const statusBar = document.createElement('div');
-      statusBar.className = 'flex justify-between items-center w-full mb-2';
-      statusBar.innerHTML = `<div class="tool-indicator" id="tool-indicator"><i class="fas fa-paint-brush mr-2"></i>Кисть</div><div><span id="selected-color-show">Красный</span></div>`;
-      paintDiv.appendChild(statusBar);
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'paint-container glass p-1';
-      const video = document.createElement('video');
-      video.setAttribute('autoplay', true);
-      video.setAttribute('playsinline', true);
-      const canvas = document.createElement('canvas');
-      canvas.width = 640; canvas.height = 480;
-      const ctx = canvas.getContext('2d');
-      ctx.lineWidth = 8;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#ff4444';
-      wrapper.appendChild(video);
-      wrapper.appendChild(canvas);
-      paintDiv.appendChild(wrapper);
-
-      const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#ffffff', '#000000'];
-      let currentColor = '#ff4444';
-      let currentTool = 'brush';
-      const paletteDiv = document.createElement('div');
-      paletteDiv.className = 'color-picker';
-      colors.forEach(c => {
-        const circ = document.createElement('div');
-        circ.className = `color-circle ${c === currentColor ? 'active' : ''}`;
-        circ.style.backgroundColor = c;
-        circ.onclick = () => {
-          currentColor = c;
-          document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('active'));
-          circ.classList.add('active');
-          document.getElementById('selected-color-show').innerText = c;
-        };
-        paletteDiv.appendChild(circ);
-      });
-      paintDiv.appendChild(paletteDiv);
-
-      const btnDiv = document.createElement('div');
-      btnDiv.className = 'flex gap-4 mt-4';
-      const clearBtn = document.createElement('button');
-      clearBtn.className = 'back-btn';
-      clearBtn.innerHTML = '<i class="fas fa-trash mr-2"></i>Очистить';
-      clearBtn.onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const saveBtn = document.createElement('button');
-      saveBtn.className = 'back-btn';
-      saveBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Сохранить';
-      saveBtn.onclick = () => { const a = document.createElement('a'); a.download = 'paint.png'; a.href = canvas.toDataURL(); a.click(); };
-      btnDiv.appendChild(clearBtn); btnDiv.appendChild(saveBtn);
-      paintDiv.appendChild(btnDiv);
-      container.appendChild(paintDiv);
-
-      const hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-      hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-
-      let lastX = null, lastY = null;
-      hands.onResults(results => {
-        if (!results.multiHandLandmarks?.length) { lastX = lastY = null; return; }
-        const lm = results.multiHandLandmarks[0];
-        const w = canvas.width, h = canvas.height;
-        const ix = (1 - lm[8].x) * w, iy = lm[8].y * h;
-        const px = (1 - lm[0].x) * w, py = lm[0].y * h;
-
-        // Определение раскрытой ладони (4 пальца вытянуты)
-        let extended = 0;
-        for (let i = 0; i < 5; i++) {
-          let tip = lm[4 + 4*i];
-          let pip = lm[4 + 4*i + 1]; // грубо
-          if (tip.y < pip.y) extended++; // для вертикальной ориентации
-        }
-        const isPalmOpen = extended >= 4;
-
-        if (isPalmOpen) {
-          currentTool = 'eraser';
-          ctx.globalCompositeOperation = 'destination-out';
-          ctx.lineWidth = 40;
-        } else {
-          currentTool = 'brush';
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.lineWidth = 10;
-          ctx.strokeStyle = currentColor;
-        }
-        document.getElementById('tool-indicator').innerHTML = currentTool === 'eraser' ? '<i class="fas fa-eraser mr-2"></i>Ластик' : '<i class="fas fa-paint-brush mr-2"></i>Кисть';
-
-        let drawX = currentTool === 'eraser' ? px : ix;
-        let drawY = currentTool === 'eraser' ? py : iy;
-
-        if (lastX && lastY) {
-          ctx.beginPath();
-          ctx.moveTo(lastX, lastY);
-          ctx.lineTo(drawX, drawY);
-          ctx.stroke();
-        }
-        lastX = drawX; lastY = drawY;
-      });
-
-      const camera = new Camera(video, { onFrame: async () => { await hands.send({ image: video }); }, width: 640, height: 480 });
-      camera.start().catch(e => alert('Камера не доступна: ' + e.message));
-
-      return () => { camera.stop(); hands.close(); };
-    }
+    // 30 Жестовый Paint (уже реализован отдельно)
+    runGesturePaint
   ];
 
   // ====================== НАВИГАЦИЯ ======================
