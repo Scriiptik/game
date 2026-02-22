@@ -41,21 +41,29 @@ html,body{
   z-index:3;
 }
 
-.shop-panel{
+.panel-left{
   position:absolute;
   top:15px;
   left:15px;
   z-index:4;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-.shop{
+.shop-panel, .music-panel, .illuminator-panel{
+  width:260px;
+}
+
+.panel-content{
   margin-top:8px;
   max-height:0;
   overflow:auto;
   transition:.4s;
-  width:260px;
 }
-.shop.open{max-height:500px}
+.panel-content.open{
+  max-height:500px;
+}
 
 .item{
   display:flex;
@@ -64,7 +72,7 @@ html,body{
   padding:8px;
   border-bottom:1px solid rgba(255,255,255,.1);
 }
-.item img{width:36px}
+.item img{width:36px; height:36px; object-fit:cover; border-radius:8px;}
 
 button{
   width:100%;
@@ -94,7 +102,7 @@ button:disabled{
   font-size:22px;
 }
 
-/* ===== ФОН-ПРЕДМЕТЫ ===== */
+/* ===== ФОН-ПРЕДМЕТЫ (десктоп) ===== */
 .bg-items{
   position:absolute;
   inset:0;
@@ -115,12 +123,30 @@ button:disabled{
   to{rotate:360deg}
 }
 
+/* ===== ИЛЛЮМИНАТОР (мобильный) ===== */
+#illuminator-container{
+  position:relative;
+  width:100%;
+  height:300px;
+  background:rgba(0,0,0,0.3);
+  border-radius:16px;
+  overflow:hidden;
+  margin-top:8px;
+}
+.illuminator-item{
+  position:absolute;
+  width:60px;
+  cursor:grab;
+  animation:float 6s ease-in-out infinite, spin 30s linear infinite;
+}
+
 /* ===== ЧАСТИЦЫ ===== */
 .particle{
   position:absolute;
   color:#00ffd5;
   pointer-events:none;
   animation:part 1s forwards;
+  z-index:10;
 }
 @keyframes part{
   to{opacity:0;transform:translateY(-60px)}
@@ -142,9 +168,31 @@ button:disabled{
 <canvas id="stars"></canvas>
 <div class="bg-items" id="bg"></div>
 
-<div class="shop-panel glass">
-  <button id="toggleShop">🛒 Магазин</button>
-  <div class="shop glass" id="shop"></div>
+<!-- Левая панель с вкладками -->
+<div class="panel-left">
+  <!-- Магазин -->
+  <div class="shop-panel glass">
+    <button id="toggleShop">🛒 Магазин</button>
+    <div class="panel-content glass" id="shop"></div>
+  </div>
+
+  <!-- Музыка -->
+  <div class="music-panel glass">
+    <button id="toggleMusic">🎵 Музыка</button>
+    <div class="panel-content glass" id="musicPanel">
+      <button id="musicMelody1">🎹 Мелодия 1</button>
+      <button id="musicMelody2">🎸 Мелодия 2</button>
+      <button id="musicOff">🔇 Выключить</button>
+    </div>
+  </div>
+
+  <!-- Иллюминатор (только для мобильных) -->
+  <div class="illuminator-panel glass" id="illuminatorPanel" style="display:none;">
+    <button id="toggleIlluminator">🔮 Иллюминатор</button>
+    <div class="panel-content glass" id="illuminatorContent">
+      <div id="illuminator-container"></div>
+    </div>
+  </div>
 </div>
 
 <div class="game glass">
@@ -165,11 +213,11 @@ button:disabled{
 </div>
 
 <script>
-/* ===== ЗВЁЗДЫ ===== */
+/* ===== ЗВЁЗДЫ (уменьшено в 2 раза) ===== */
 const c=document.getElementById("stars"),ctx=c.getContext("2d");
 function resize(){c.width=innerWidth;c.height=innerHeight}
 resize();onresize=resize;
-const stars=[...Array(15000)].map(()=>({
+const stars=[...Array(7500)].map(()=>({
 x:Math.random()*c.width,
 y:Math.random()*c.height,
 s:Math.random()*1.5
@@ -187,9 +235,59 @@ requestAnimationFrame(draw);
 }
 draw();
 
-/* ===== ЗВУКИ (Web Audio) ===== */
+/* ===== ЗВУКИ ===== */
 const ac=new AudioContext();
 let musicInterval = null;
+let currentMelody = 1; // 1,2 или 0 (выкл)
+
+// Мелодия 1 (аккорд C-dur)
+function playMelody1() {
+  const now = ac.currentTime;
+  [261.63, 329.63, 392.0].forEach(freq => {
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.02, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+    osc.connect(gain).connect(ac.destination);
+    osc.start(now);
+    osc.stop(now + 1.5);
+  });
+}
+
+// Мелодия 2 (аккорд Am)
+function playMelody2() {
+  const now = ac.currentTime;
+  [220.0, 261.63, 329.63].forEach(freq => {
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.02, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+    osc.connect(gain).connect(ac.destination);
+    osc.start(now);
+    osc.stop(now + 1.5);
+  });
+}
+
+function startMusic() {
+  if (musicInterval) clearInterval(musicInterval);
+  if (currentMelody === 0) return;
+  const player = currentMelody === 1 ? playMelody1 : playMelody2;
+  player(); // сыграть сразу
+  musicInterval = setInterval(player, 3000);
+}
+
+function changeMelody(melody) {
+  currentMelody = melody;
+  if (musicInterval) {
+    clearInterval(musicInterval);
+    musicInterval = null;
+  }
+  if (melody !== 0) startMusic();
+}
 
 // Приятный звук клика
 function clickSound(){
@@ -197,7 +295,7 @@ function clickSound(){
   const osc = ac.createOscillator();
   const gain = ac.createGain();
   osc.type = 'sine';
-  osc.frequency.value = 660; // нота ми
+  osc.frequency.value = 660;
   gain.gain.setValueAtTime(0.1, now);
   gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
   osc.connect(gain).connect(ac.destination);
@@ -205,45 +303,37 @@ function clickSound(){
   osc.stop(now + 0.15);
 }
 
-// Фоновая музыка (зацикленный аккорд C‑dur)
-function startBackgroundMusic() {
-  if (musicInterval) return;
-  musicInterval = setInterval(() => {
-    const now = ac.currentTime;
-    // Аккорд: до, ми, соль
-    [261.63, 329.63, 392.0].forEach(freq => {
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.02, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
-      osc.connect(gain).connect(ac.destination);
-      osc.start(now);
-      osc.stop(now + 1.5);
-    });
-  }, 3000); // каждые 3 секунды
-}
-
-// Музыка стартует после первого клика
+// Флаг, запущена ли музыка (для первого клика)
 let musicStarted = false;
 function tryStartMusic() {
-  if (!musicStarted) {
+  if (!musicStarted && currentMelody !== 0) {
     ac.resume();
-    startBackgroundMusic();
+    startMusic();
     musicStarted = true;
   }
 }
 
+/* ===== ОПРЕДЕЛЕНИЕ МОБИЛЬНОСТИ ===== */
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+// Показываем иллюминатор только на мобильных
+const illuminatorPanel = document.getElementById('illuminatorPanel');
+if (isMobile) {
+  illuminatorPanel.style.display = 'block';
+  document.getElementById('bg').style.display = 'none'; // скрываем общий фон
+} else {
+  illuminatorPanel.style.display = 'none';
+}
+
 /* ===== ИГРА ===== */
-// Начальные значения (без автозагрузки)
 let score = 0;
 let power = 1;
 let auto = 0;
 let upPrice = 100;
 let autoPrice = 500;
 let owned = {};      // { itemId: imgUrl }
-let pos = {};        // { itemId: {x, y} }
+let pos = {};        // для десктопа: { itemId: {x, y} } относительно окна
+let mobilePos = {};  // для мобильных: { itemId: {x, y} } относительно контейнера иллюминатора
 
 // Элементы интерфейса
 const scoreEl = document.getElementById('score');
@@ -254,11 +344,26 @@ const autoPriceSpan = document.getElementById('autoPrice');
 
 const bg = document.getElementById('bg');
 const shop = document.getElementById('shop');
+const illuminatorContainer = document.getElementById('illuminator-container');
 
-// Генерация предметов (50 шт) с названиями
+// Уникальные названия для 50 предметов
+const itemNames = [
+  "Звёздный осколок", "Лунный камень", "Пламенное сердце", "Древняя монета", "Кристалл дракона",
+  "Глаз феникса", "Руна ветра", "Жемчужина глубин", "Клык оборотня", "Перо грифона",
+  "Чешуя дракона", "Коготь виверны", "Слеза единорога", "Корень мандрагоры", "Светлячок в банке",
+  "Механическое сердце", "Хрустальный череп", "Золотое яблоко", "Серебряная подкова", "Книга заклинаний",
+  "Амулет времени", "Кольцо всевластия", "Кулон луны", "Браслет ветра", "Диадема солнца",
+  "Посох мага", "Меч короля", "Щит воина", "Шлем викинга", "Лук эльфа",
+  "Кинжал тени", "Топор варвара", "Булава паладина", "Копьё судьбы", "Молот Тора",
+  "Сфера пророчеств", "Карта сокровищ", "Компас странника", "Фонарь душ", "Ключ от бездны",
+  "Песочные часы", "Весы правосудия", "Зеркало истины", "Маска демона", "Крыло ангела",
+  "Роза ветров", "Клевер удачи", "Жёлудь мира", "Шип розы", "Лепесток лотоса"
+];
+
+// Генерация предметов
 const items = [...Array(50)].map((_, i) => ({
   id: 'item' + i,
-  name: `Реликвия ${i+1}`,          // простые уникальные названия
+  name: itemNames[i],
   price: Math.floor(800 * Math.pow(1.25, i)),
   img: `https://picsum.photos/seed/${i}/64`
 }));
@@ -273,71 +378,35 @@ function update() {
 }
 update();
 
-// Сохранение в localStorage
-function saveGame() {
-  localStorage.setItem('clicker_score', score);
-  localStorage.setItem('clicker_power', power);
-  localStorage.setItem('clicker_auto', auto);
-  localStorage.setItem('clicker_upPrice', upPrice);
-  localStorage.setItem('clicker_autoPrice', autoPrice);
-  localStorage.setItem('clicker_owned', JSON.stringify(owned));
-  localStorage.setItem('clicker_pos', JSON.stringify(pos));
-  alert('Прогресс сохранён!');
-}
-
-// Загрузка из localStorage
-function loadGame() {
-  const s = localStorage.getItem('clicker_score');
-  if (s === null) {
-    alert('Нет сохранённой игры');
-    return;
-  }
-  score = Number(s);
-  power = Number(localStorage.getItem('clicker_power')) || 1;
-  auto = Number(localStorage.getItem('clicker_auto')) || 0;
-  upPrice = Number(localStorage.getItem('clicker_upPrice')) || 100;
-  autoPrice = Number(localStorage.getItem('clicker_autoPrice')) || 500;
-  owned = JSON.parse(localStorage.getItem('clicker_owned')) || {};
-  pos = JSON.parse(localStorage.getItem('clicker_pos')) || {};
-
-  // Перестроить фон
-  bg.innerHTML = '';
-  Object.keys(owned).forEach(id => addBgItem(id, owned[id]));
-
-  update();
-  renderShop(); // обновить состояние кнопок в магазине
-  alert('Прогресс загружен!');
-}
-
-// Сброс к начальным значениям
-function resetGame() {
-  if (confirm('Сбросить весь прогресс?')) {
-    score = 0;
-    power = 1;
-    auto = 0;
-    upPrice = 100;
-    autoPrice = 500;
-    owned = {};
-    pos = {};
-    bg.innerHTML = '';
-    update();
-    renderShop();
+/* ===== ДОБАВЛЕНИЕ ПРЕДМЕТА (в зависимости от платформы) ===== */
+function addItemToView(id, imgSrc) {
+  if (isMobile) {
+    // Добавляем в иллюминатор
+    const el = document.createElement('img');
+    el.src = imgSrc;
+    el.className = 'illuminator-item';
+    // Берём сохранённую позицию или случайную в пределах контейнера
+    const containerRect = illuminatorContainer.getBoundingClientRect();
+    const defaultX = containerRect.width ? Math.random() * (containerRect.width - 60) : 100;
+    const defaultY = containerRect.height ? Math.random() * (containerRect.height - 60) : 100;
+    el.style.left = (mobilePos[id]?.x || defaultX) + 'px';
+    el.style.top = (mobilePos[id]?.y || defaultY) + 'px';
+    makeDraggableInContainer(el, id);
+    illuminatorContainer.appendChild(el);
+  } else {
+    // Добавляем на общий фон
+    const el = document.createElement('img');
+    el.src = imgSrc;
+    el.className = 'bg-item';
+    el.style.left = (pos[id]?.x || Math.random() * innerWidth) + 'px';
+    el.style.top = (pos[id]?.y || Math.random() * innerHeight) + 'px';
+    makeDraggableOnScreen(el, id);
+    bg.appendChild(el);
   }
 }
 
-/* ===== ДОБАВЛЕНИЕ ПРЕДМЕТА НА ФОН ===== */
-function addBgItem(id, imgSrc) {
-  const el = document.createElement('img');
-  el.src = imgSrc;
-  el.className = 'bg-item';
-  el.style.left = (pos[id]?.x || Math.random() * innerWidth) + 'px';
-  el.style.top = (pos[id]?.y || Math.random() * innerHeight) + 'px';
-  makeDraggable(el, id);
-  bg.appendChild(el);
-}
-
-// Перетаскивание (обновляет pos, но не сохраняет автоматически)
-function makeDraggable(el, id) {
+// Перетаскивание по всему экрану (десктоп)
+function makeDraggableOnScreen(el, id) {
   let dx, dy;
   el.onmousedown = e => {
     e.preventDefault();
@@ -347,6 +416,30 @@ function makeDraggable(el, id) {
       el.style.left = (m.clientX - dx) + 'px';
       el.style.top = (m.clientY - dy) + 'px';
       pos[id] = { x: m.clientX - dx, y: m.clientY - dy };
+    };
+    document.onmouseup = () => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+    };
+  };
+}
+
+// Перетаскивание внутри контейнера иллюминатора (мобильный)
+function makeDraggableInContainer(el, id) {
+  let dx, dy;
+  el.onmousedown = e => {
+    e.preventDefault();
+    dx = e.clientX - el.offsetLeft - illuminatorContainer.offsetLeft;
+    dy = e.clientY - el.offsetTop - illuminatorContainer.offsetTop;
+    document.onmousemove = m => {
+      // Ограничиваем перемещение внутри контейнера
+      let newX = m.clientX - illuminatorContainer.offsetLeft - dx;
+      let newY = m.clientY - illuminatorContainer.offsetTop - dy;
+      newX = Math.max(0, Math.min(illuminatorContainer.clientWidth - el.clientWidth, newX));
+      newY = Math.max(0, Math.min(illuminatorContainer.clientHeight - el.clientHeight, newY));
+      el.style.left = newX + 'px';
+      el.style.top = newY + 'px';
+      mobilePos[id] = { x: newX, y: newY };
     };
     document.onmouseup = () => {
       document.onmousemove = null;
@@ -376,10 +469,9 @@ function renderShop() {
         if (score >= item.price) {
           score -= item.price;
           owned[item.id] = item.img;
-          // Добавляем на фон
-          addBgItem(item.id, item.img);
+          addItemToView(item.id, item.img);
           update();
-          renderShop(); // обновить магазин (кнопка станет disabled)
+          renderShop();
         }
       };
     }
@@ -390,45 +482,16 @@ renderShop();
 
 /* ===== КЛИКЕР ===== */
 document.getElementById('click').onclick = e => {
-  tryStartMusic(); // запустить фоновую музыку при первом клике
-  ac.resume();     // на всякий случай
+  tryStartMusic();
+  ac.resume();
   clickSound();
 
   score += power;
-  spawn(e.clientX, e.clientY, '+' + power);
+  spawnParticle(e.clientX, e.clientY, '+' + power);
   update();
 };
 
-// Улучшение силы клика
-document.getElementById('upgrade').onclick = () => {
-  if (score >= upPrice) {
-    score -= upPrice;
-    power *= 2;
-    upPrice = Math.floor(upPrice * 2.6);
-    update();
-  }
-};
-
-// Автокликер
-document.getElementById('autoUp').onclick = () => {
-  if (score >= autoPrice) {
-    score -= autoPrice;
-    auto++;
-    autoPrice = Math.floor(autoPrice * 2.4);
-    update();
-  }
-};
-
-// Автоматический сбор автокликера
-setInterval(() => {
-  if (auto > 0) {
-    score += power * auto;
-    update();
-  }
-}, 1000);
-
-// Частицы при клике
-function spawn(x, y, text) {
+function spawnParticle(x, y, text) {
   const p = document.createElement('div');
   p.className = 'particle';
   p.textContent = text;
@@ -438,16 +501,132 @@ function spawn(x, y, text) {
   setTimeout(() => p.remove(), 900);
 }
 
-// Кнопки сохранения/загрузки/сброса
+// Улучшения
+document.getElementById('upgrade').onclick = () => {
+  if (score >= upPrice) {
+    score -= upPrice;
+    power *= 2;
+    upPrice = Math.floor(upPrice * 2.6);
+    update();
+  }
+};
+
+document.getElementById('autoUp').onclick = () => {
+  if (score >= autoPrice) {
+    score -= autoPrice;
+    auto++;
+    autoPrice = Math.floor(autoPrice * 2.4);
+    update();
+  }
+};
+
+// Автокликер
+setInterval(() => {
+  if (auto > 0) {
+    score += power * auto;
+    update();
+  }
+}, 1000);
+
+/* ===== СОХРАНЕНИЕ/ЗАГРУЗКА ===== */
+function saveGame() {
+  localStorage.setItem('clicker_score', score);
+  localStorage.setItem('clicker_power', power);
+  localStorage.setItem('clicker_auto', auto);
+  localStorage.setItem('clicker_upPrice', upPrice);
+  localStorage.setItem('clicker_autoPrice', autoPrice);
+  localStorage.setItem('clicker_owned', JSON.stringify(owned));
+  if (isMobile) {
+    localStorage.setItem('clicker_mobilePos', JSON.stringify(mobilePos));
+  } else {
+    localStorage.setItem('clicker_pos', JSON.stringify(pos));
+  }
+  alert('Прогресс сохранён!');
+}
+
+function loadGame() {
+  const s = localStorage.getItem('clicker_score');
+  if (s === null) {
+    alert('Нет сохранённой игры');
+    return;
+  }
+  score = Number(s);
+  power = Number(localStorage.getItem('clicker_power')) || 1;
+  auto = Number(localStorage.getItem('clicker_auto')) || 0;
+  upPrice = Number(localStorage.getItem('clicker_upPrice')) || 100;
+  autoPrice = Number(localStorage.getItem('clicker_autoPrice')) || 500;
+  owned = JSON.parse(localStorage.getItem('clicker_owned')) || {};
+
+  if (isMobile) {
+    mobilePos = JSON.parse(localStorage.getItem('clicker_mobilePos')) || {};
+    // Очищаем и заново заполняем иллюминатор
+    illuminatorContainer.innerHTML = '';
+    Object.keys(owned).forEach(id => addItemToView(id, owned[id]));
+  } else {
+    pos = JSON.parse(localStorage.getItem('clicker_pos')) || {};
+    bg.innerHTML = '';
+    Object.keys(owned).forEach(id => addItemToView(id, owned[id]));
+  }
+
+  update();
+  renderShop();
+  alert('Прогресс загружен!');
+}
+
+function resetGame() {
+  if (confirm('Сбросить весь прогресс?')) {
+    score = 0;
+    power = 1;
+    auto = 0;
+    upPrice = 100;
+    autoPrice = 500;
+    owned = {};
+    pos = {};
+    mobilePos = {};
+    if (isMobile) {
+      illuminatorContainer.innerHTML = '';
+    } else {
+      bg.innerHTML = '';
+    }
+    update();
+    renderShop();
+  }
+}
+
 document.getElementById('saveBtn').onclick = saveGame;
 document.getElementById('loadBtn').onclick = loadGame;
 document.getElementById('resetBtn').onclick = resetGame;
 
-// Открытие/закрытие магазина
-document.getElementById('toggleShop').onclick = () => shop.classList.toggle('open');
+/* ===== УПРАВЛЕНИЕ ВКЛАДКАМИ ===== */
+document.getElementById('toggleShop').onclick = () => {
+  document.getElementById('shop').classList.toggle('open');
+};
+document.getElementById('toggleMusic').onclick = () => {
+  document.getElementById('musicPanel').classList.toggle('open');
+};
+if (isMobile) {
+  document.getElementById('toggleIlluminator').onclick = () => {
+    document.getElementById('illuminatorContent').classList.toggle('open');
+  };
+}
 
-// Инициализация пустого фона (без автозагрузки)
-// (ничего не загружаем, всё уже в начальных значениях)
+// Музыкальные кнопки
+document.getElementById('musicMelody1').onclick = () => {
+  changeMelody(1);
+  if (!musicStarted) tryStartMusic();
+};
+document.getElementById('musicMelody2').onclick = () => {
+  changeMelody(2);
+  if (!musicStarted) tryStartMusic();
+};
+document.getElementById('musicOff').onclick = () => {
+  changeMelody(0);
+  musicStarted = false;
+};
+
+// При загрузке уже купленных предметов (если они были в owned из localStorage)
+// Но при первом запуске owned пуст, поэтому ничего не делаем.
+// Однако при загрузке через loadGame они добавятся.
 </script>
 </body>
 </html>
