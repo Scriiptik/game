@@ -82,16 +82,12 @@
         /* изображение / гифка */
         .meme-media {
             width: 100%;
-            aspect-ratio: 1 / 1; /* квадрат, но можно подстраивать */
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             background: #ddd;
             display: block;
             border-bottom: 2px solid #eee;
             cursor: pointer;
-        }
-        .meme-media.video-fit {
-            object-fit: contain; /* для видео лучше contain, но у нас только картинки/гифки */
-            background: black;
         }
 
         /* нижняя часть карточки */
@@ -250,22 +246,22 @@
 
     <button id="scrollTopBtn" title="Наверх"><i class="fas fa-arrow-up"></i></button>
 
-    <!-- Подключаем axios для удобства запросов -->
+    <!-- Подключаем axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         (function() {
-            // DOM элементы
             const container = document.getElementById('memeContainer');
             const loader = document.getElementById('loader');
             const endMessage = document.getElementById('endMessage');
             const scrollBtn = document.getElementById('scrollTopBtn');
 
-            // Состояние
-            let after = null;          // для пагинации Reddit
+            let after = null;          // токен пагинации Reddit
             let loading = false;
             let hasMore = true;
-            let requestCount = 0;       // для разнообразия subreddits
             const subreddits = ['memes', 'dankmemes', 'wholesomememes', 'AdviceAnimals', 'MemeEconomy'];
+
+            // Прокси-сервер для обхода CORS (allorigins.win отдаёт данные с правильными заголовками)
+            const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
             // --- Функция определения года и класса ---
             function getYearClass(timestamp) {
@@ -280,37 +276,29 @@
                 return 'year-old'; // 2018 и ранее
             }
 
-            // --- Вспомогательная функция: проверка, является ли URL изображением/гифкой ---
+            // --- Проверка, является ли URL изображением/гифкой ---
             function isImageOrGif(url) {
                 if (!url) return false;
-                const ext = url.split('?')[0].toLowerCase(); // отсекаем параметры
-                return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif') || ext.includes('.gifv'); // gifv обработаем как гифку
+                const ext = url.split('?')[0].toLowerCase();
+                return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif');
             }
 
-            // --- Функция для получения чистого URL медиа из поста Reddit ---
+            // --- Получение чистого URL медиа из поста Reddit ---
             function getMediaUrl(post) {
-                // Сначала проверяем, есть ли preview с images (самое надёжное для статичных)
                 if (post.preview && post.preview.images && post.preview.images[0]) {
                     const source = post.preview.images[0].source;
                     if (source && source.url) {
-                        // декодируем &amp; и прочее
-                        let url = source.url.replace(/&amp;/g, '&');
-                        // Reddit отдаёт заэкранированные URL
-                        return url;
+                        return source.url.replace(/&amp;/g, '&');
                     }
                 }
-                // Если это напрямую изображение (url)
                 if (post.url && isImageOrGif(post.url)) {
                     return post.url;
                 }
-                // Если есть media (для гифок, иногда)
                 if (post.media && post.media.reddit_video) {
-                    // Вернём fallback изображение из превью, т.к. видео сложно встроить
                     if (post.preview && post.preview.images && post.preview.images[0]) {
                         return post.preview.images[0].source.url.replace(/&amp;/g, '&');
                     }
                 }
-                // Пытаемся получить из secure_media
                 if (post.secure_media && post.secure_media.reddit_video) {
                     if (post.preview && post.preview.images) {
                         return post.preview.images[0].source.url.replace(/&amp;/g, '&');
@@ -319,7 +307,7 @@
                 return null;
             }
 
-            // --- Основная функция загрузки мемов ---
+            // --- Основная функция загрузки мемов через прокси ---
             async function fetchMemes() {
                 if (loading || !hasMore) return;
 
@@ -328,20 +316,25 @@
                 endMessage.style.display = 'none';
 
                 try {
-                    // Выбираем случайный сабреддит для разнообразия
                     const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
-                    let url = `https://www.reddit.com/r/${sub}.json?limit=15`;
+                    let redditUrl = `https://www.reddit.com/r/${sub}.json?limit=12`;
                     if (after) {
-                        url += `&after=${after}`;
+                        redditUrl += `&after=${after}`;
                     }
 
-                    const response = await axios.get(url, {
-                        headers: { 'User-Agent': 'MemeScroll/1.0 (desktop; mobile)' } // Reddit требует user-agent
-                    });
+                    const proxyUrl = CORS_PROXY + encodeURIComponent(redditUrl);
+                    const response = await axios.get(proxyUrl);
 
-                    const data = response.data.data;
-                    const posts = data.children;
+                    // allorigins.win возвращает тело ответа как строку в response.data
+                    let data;
+                    try {
+                        data = JSON.parse(response.data);
+                    } catch (e) {
+                        console.error('Не удалось распарсить JSON:', e);
+                        throw new Error('Ошибка парсинга ответа от прокси');
+                    }
 
+                    const posts = data.data.children;
                     if (!posts || posts.length === 0) {
                         hasMore = false;
                         loader.style.display = 'none';
@@ -349,65 +342,48 @@
                         return;
                     }
 
-                    after = data.after; // сохраняем для следующей страницы
+                    after = data.data.after;
                     if (!after) hasMore = false;
 
-                    // Фильтруем посты, у которых есть изображение/гифка
+                    // Фильтруем посты с медиа
                     const validPosts = posts.filter(child => {
                         const post = child.data;
-                        // Избегаем закреплённых постов, видео reddit (не встраиваются просто)
                         if (post.stickied) return false;
-                        if (post.over_18) return false; // SFW
+                        if (post.over_18) return false;
                         const mediaUrl = getMediaUrl(post);
                         return mediaUrl && isImageOrGif(mediaUrl);
                     });
 
                     if (validPosts.length === 0) {
-                        // Если нет валидных в этой партии, пробуем ещё раз (рекурсивно, но осторожно)
+                        // Если в этой пачке нет картинок, пробуем ещё раз (рекурсивно, осторожно)
                         if (hasMore) {
-                            loading = false; // сбросим, чтобы следующая итерация могла загрузить
+                            loading = false;
                             fetchMemes();
                             return;
                         }
                     }
 
-                    // Обрабатываем каждый пост
                     validPosts.forEach(child => {
                         const post = child.data;
                         const title = post.title || 'Мем без названия';
                         const yearClass = getYearClass(post.created_utc);
                         const mediaUrl = getMediaUrl(post);
-
                         if (!mediaUrl) return;
 
-                        // Создаём карточку
                         const card = document.createElement('div');
                         card.className = `meme-card ${yearClass} animate__animated animate__fadeInUp`;
                         card.setAttribute('data-year', yearClass);
 
-                        // Медиа элемент (картинка или гифка)
-                        let mediaElement;
-                        if (mediaUrl.toLowerCase().includes('.gif') || mediaUrl.toLowerCase().includes('.gifv')) {
-                            // Для гифок используем <img> с autoplay? лучше <img> так как гифка это изображение
-                            mediaElement = document.createElement('img');
-                            mediaElement.src = mediaUrl.replace('.gifv', '.gif'); // на всякий случай
-                            mediaElement.alt = title;
-                            mediaElement.loading = 'lazy';
-                            mediaElement.classList.add('meme-media');
-                        } else {
-                            mediaElement = document.createElement('img');
-                            mediaElement.src = mediaUrl;
-                            mediaElement.alt = title;
-                            mediaElement.loading = 'lazy';
-                            mediaElement.classList.add('meme-media');
-                        }
+                        const mediaElement = document.createElement('img');
+                        mediaElement.src = mediaUrl.includes('.gifv') ? mediaUrl.replace('.gifv', '.gif') : mediaUrl;
+                        mediaElement.alt = title;
+                        mediaElement.loading = 'lazy';
+                        mediaElement.classList.add('meme-media');
 
-                        // Обработка ошибок загрузки изображения (можно заменить на плейсхолдер)
                         mediaElement.onerror = () => {
                             mediaElement.src = 'https://via.placeholder.com/300x300?text=Мем+не+загрузился:+(';
                         };
 
-                        // Информационный блок
                         const infoDiv = document.createElement('div');
                         infoDiv.className = 'meme-info';
 
@@ -431,7 +407,6 @@
 
                 } catch (error) {
                     console.error('Ошибка загрузки мемов:', error);
-                    // Показываем сообщение, но не блокируем полностью
                     const errorDiv = document.createElement('div');
                     errorDiv.style.gridColumn = '1 / -1';
                     errorDiv.style.padding = '20px';
@@ -456,12 +431,10 @@
                 const windowHeight = window.innerHeight;
                 const documentHeight = document.documentElement.scrollHeight;
 
-                // Если осталось меньше 400px до низа - загружаем
                 if (scrollY + windowHeight >= documentHeight - 400) {
                     fetchMemes();
                 }
 
-                // Кнопка "наверх"
                 if (scrollY > 300) {
                     scrollBtn.style.display = 'block';
                 } else {
@@ -473,7 +446,6 @@
                 requestAnimationFrame(handleScroll);
             });
 
-            // Кнопка наверх
             scrollBtn.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
@@ -481,12 +453,12 @@
             // Стартовая загрузка
             fetchMemes();
 
-            // Периодическая проверка на случай, если контент не занял весь экран (скролла нет)
+            // Если контента мало, подгрузим ещё
             setTimeout(() => {
                 if (document.documentElement.scrollHeight <= window.innerHeight) {
-                    fetchMemes(); // подгрузим ещё
+                    fetchMemes();
                 }
-            }, 500);
+            }, 800);
         })();
     </script>
 </body>
