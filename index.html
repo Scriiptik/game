@@ -204,7 +204,7 @@
     }
     .mobile-panel.open {
       max-height: 60vh;
-      overflow-y: hidden;
+      overflow-y: auto;  /* ИСПРАВЛЕНО: теперь можно листать */
     }
 
     /* ----- ИЛЛЮМИНАТОР (круглый, большой) ----- */
@@ -750,12 +750,14 @@
     // touch
     el.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      e.stopPropagation(); // <-- ИСПРАВЛЕНО: не даём событию уйти к viewport
       const touch = e.touches[0];
       dragStart(touch.clientX, touch.clientY);
     }, { passive: false });
 
     el.addEventListener('touchmove', (e) => {
       e.preventDefault();
+      e.stopPropagation(); // <-- ИСПРАВЛЕНО: не даём событию уйти к viewport
       const touch = e.touches[0];
       dragMove(touch.clientX, touch.clientY);
     }, { passive: false });
@@ -976,4 +978,4 @@
 })();
 </script>
 </body>
-</html> с телефона при открытии магазина не могу листать его список исправь это И БЛЬШЕ НИЧЕГО НЕ ТРОГАЙ
+</html>
