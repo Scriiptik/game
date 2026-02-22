@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-88">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D пространство + жесты тремя пальцами</title>
+    <title>3D пространство + жесты тремя пальцами (улучшено)</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #info {
@@ -114,7 +114,7 @@
 
         // --- Настройка сцены ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a20); // глубокий космос
+        scene.background = new THREE.Color(0x0a0a20);
 
         // --- Камера и рендерер ---
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -162,15 +162,14 @@
         gridHelper.position.y = -0.19;
         scene.add(gridHelper);
 
-        // --- ЗВЁЗДНОЕ ПОЛЕ (множество мерцающих точек) ---
+        // --- ЗВЁЗДНОЕ ПОЛЕ (мерцающие точки) ---
         const starGeometry = new THREE.BufferGeometry();
         const starCount = 3000;
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
-        const sizes = new Float32Array(starCount); // для индивидуального мерцания
+        const sizes = new Float32Array(starCount);
         
         for (let i = 0; i < starCount; i++) {
-            // Распределение в сфере радиусом 40-70
             const r = 40 + Math.random() * 40;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
@@ -183,23 +182,19 @@
             positions[i*3+1] = y;
             positions[i*3+2] = z;
             
-            // Цвет: белый с лёгким оттенком
             colors[i*3] = 0.8 + Math.random() * 0.4;
             colors[i*3+1] = 0.7 + Math.random() * 0.5;
             colors[i*3+2] = 0.6 + Math.random() * 0.5;
             
-            sizes[i] = Math.random() * 0.3 + 0.1; // базовый размер
+            sizes[i] = Math.random() * 0.3 + 0.1;
         }
         
         starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1)); // сохраним для анимации
+        starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
         
-        // Материал с использованием шейдера для мерцания
         const starMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 }
-            },
+            uniforms: { time: { value: 0 } },
             vertexShader: `
                 attribute float size;
                 attribute vec3 color;
@@ -208,11 +203,10 @@
                 uniform float time;
                 void main() {
                     vColor = color;
-                    // Мерцание: размер меняется синусоидально с индивидуальной частотой
                     float flicker = 0.7 + 0.5 * sin(size * 10.0 + time * 3.0);
                     vSize = size * flicker;
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = vSize * (300.0 / -mvPosition.z); // уменьшение с расстоянием
+                    gl_PointSize = vSize * (300.0 / -mvPosition.z);
                     gl_Position = projectionMatrix * mvPosition;
                 }
             `,
@@ -220,11 +214,10 @@
                 varying vec3 vColor;
                 varying float vSize;
                 void main() {
-                    // Делаем круглые точки с мягким краем
                     vec2 cxy = 2.0 * gl_PointCoord - 1.0;
                     float r = dot(cxy, cxy);
-                    if (r > 1.0) discard; // отсекаем углы
-                    float alpha = (1.0 - r) * 0.9; // прозрачность по краям
+                    if (r > 1.0) discard;
+                    float alpha = (1.0 - r) * 0.9;
                     gl_FragColor = vec4(vColor, alpha);
                 }
             `,
@@ -240,13 +233,11 @@
         const meteorCount = 12;
         const meteors = [];
         
-        // Создаём текстуру для метеора (яркая точка с хвостом)
         const canvas = document.createElement('canvas');
         canvas.width = 64;
         canvas.height = 64;
         const ctx = canvas.getContext('2d');
         
-        // Рисуем хвост градиентом
         const gradient = ctx.createLinearGradient(0, 0, 64, 64);
         gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
         gradient.addColorStop(0.4, 'rgba(255, 200, 100, 0.8)');
@@ -255,7 +246,6 @@
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 64, 64);
         
-        // Добавляем яркое ядро
         ctx.beginPath();
         ctx.arc(20, 20, 8, 0, Math.PI * 2);
         ctx.fillStyle = 'white';
@@ -265,26 +255,9 @@
         
         const meteorTexture = new THREE.CanvasTexture(canvas);
         
-        for (let i = 0; i < meteorCount; i++) {
-            const spriteMaterial = new THREE.SpriteMaterial({ 
-                map: meteorTexture, 
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                transparent: true
-            });
-            const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(0.8, 0.8, 1);
-            
-            // Случайная начальная позиция в верхней полусфере
-            resetMeteor(sprite);
-            
-            scene.add(sprite);
-            meteors.push(sprite);
-        }
-        
         function resetMeteor(meteor) {
             meteor.position.x = (Math.random() - 0.5) * 60;
-            meteor.position.y = 30 + Math.random() * 30; // высоко
+            meteor.position.y = 30 + Math.random() * 30;
             meteor.position.z = (Math.random() - 0.5) * 60;
             
             meteor.userData = {
@@ -296,6 +269,20 @@
                 life: Math.random() * 100,
                 maxLife: 120 + Math.random() * 80
             };
+        }
+        
+        for (let i = 0; i < meteorCount; i++) {
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: meteorTexture, 
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                transparent: true
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(0.8, 0.8, 1);
+            resetMeteor(sprite);
+            scene.add(sprite);
+            meteors.push(sprite);
         }
 
         // --- Фигуры (массив) ---
@@ -352,8 +339,9 @@
         const handGroup = new THREE.Group();
         scene.add(handGroup);
 
-        const jointMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0x442200 });
-        const boneMaterial = new THREE.LineBasicMaterial({ color: 0xffdd99 });
+        // Материалы с отключенной проверкой глубины (всегда поверх)
+        const jointMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0x442200, depthTest: false });
+        const boneMaterial = new THREE.LineBasicMaterial({ color: 0xffdd99, depthTest: false });
 
         for (let i = 0; i < 21; i++) {
             const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), jointMaterial);
@@ -376,14 +364,25 @@
             handBones.push({ line, i, j });
         });
 
-        let grabbedShape = null;
-        const grabThreshold = 0.08;
+        // Визуализация точки захвата (невидимый курсор)
+        const grabPointVisual = new THREE.Mesh(
+            new THREE.SphereGeometry(0.05, 6, 4),
+            new THREE.MeshBasicMaterial({ color: 0x00aaff, depthTest: false })
+        );
+        grabPointVisual.visible = false;
+        handGroup.add(grabPointVisual);
 
+        let grabbedShape = null;
+        let highlightedShape = null; // для подсветки при наведении
+        const grabThreshold = 0.08; // расстояние между пальцами для щипка
+        const hoverRadius = 0.4; // радиус подсветки
+
+        // --- Улучшенный трекинг (modelComplexity = 1) ---
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({
             selfieMode: false,
             maxNumHands: 1,
-            modelComplexity: 0,
+            modelComplexity: 1, // более точное отслеживание
             minDetectionConfidence: 0.5,
             minTrackingConfidence: 0.5
         });
@@ -412,18 +411,28 @@
                 document.getElementById('status').textContent = 'Рука не видна';
                 handJoints.forEach(j => j.visible = false);
                 handBones.forEach(b => b.line.visible = false);
+                grabPointVisual.visible = false;
                 if (grabbedShape) {
                     grabbedShape.material.emissive.setHex(0x000000);
                     grabbedShape = null;
+                }
+                if (highlightedShape) {
+                    highlightedShape.material.emissive.setHex(0x000000);
+                    highlightedShape = null;
                 }
             }
         }
 
         function updateHandModel() {
             if (!handLandmarks) return;
+            
+            // Преобразование координат (неинвертированное: x вправо, y вверх, z вглубь)
             const points = handLandmarks.map(lm => {
+                // x: от 0 до 1 -> от -1.5 до 1.5 (вправо)
                 const x = (lm.x - 0.5) * 3.0;
+                // y: от 0 до 1 (сверху вниз) -> инвертируем, чтобы вверх было положительно
                 const y = (0.5 - lm.y) * 2.5 + 0.5;
+                // z: от 0 до 0.5 (ближе-дальше) -> от -0.5 до 0.5
                 const z = lm.z * 2.0 - 0.5;
                 return new THREE.Vector3(x, y, z);
             });
@@ -438,29 +447,52 @@
                 }
             });
 
+            // Точка захвата (среднее между большим, указательным и средним)
             if (points.length > 0) {
                 const thumbTip = points[4];
                 const indexTip = points[8];
                 const middleTip = points[12];
+                const grabPoint = new THREE.Vector3().addVectors(thumbTip, indexTip).add(middleTip).multiplyScalar(1/3);
+                
+                // Визуализация точки захвата
+                grabPointVisual.position.copy(grabPoint);
+                grabPointVisual.visible = true;
+
+                // Проверка жеста щипка
                 const dist1 = thumbTip.distanceTo(indexTip);
                 const dist2 = thumbTip.distanceTo(middleTip);
                 const dist3 = indexTip.distanceTo(middleTip);
                 const pinchDetected = (dist1 < grabThreshold && dist2 < grabThreshold && dist3 < grabThreshold);
-                const grabPoint = new THREE.Vector3().addVectors(thumbTip, indexTip).add(middleTip).multiplyScalar(1/3);
 
+                // Подсветка ближайшей фигуры (hover)
+                let closestDist = hoverRadius;
+                let newHighlight = null;
+                shapes.forEach(shape => {
+                    const dist = shape.position.distanceTo(grabPoint);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        newHighlight = shape;
+                    }
+                });
+
+                // Убираем подсветку с предыдущей
+                if (highlightedShape && highlightedShape !== newHighlight) {
+                    highlightedShape.material.emissive.setHex(0x000000);
+                }
+                // Подсвечиваем новую
+                if (newHighlight && newHighlight !== grabbedShape) {
+                    newHighlight.material.emissive.setHex(0x444444); // подсветка
+                }
+                highlightedShape = newHighlight;
+
+                // Логика захвата
                 if (pinchDetected) {
-                    if (!grabbedShape) {
-                        let minDist = 0.4;
-                        let closest = null;
-                        shapes.forEach(shape => {
-                            const dist = shape.position.distanceTo(grabPoint);
-                            if (dist < minDist) { minDist = dist; closest = shape; }
-                        });
-                        if (closest) {
-                            grabbedShape = closest;
-                            grabbedShape.material.emissive.setHex(0x444444);
-                        }
-                    } else {
+                    if (!grabbedShape && highlightedShape) {
+                        // Захватываем подсвеченный объект
+                        grabbedShape = highlightedShape;
+                        grabbedShape.material.emissive.setHex(0x884444); // более яркая подсветка при захвате
+                    } else if (grabbedShape) {
+                        // Перемещаем захваченный объект
                         grabbedShape.position.lerp(grabPoint, 0.3);
                     }
                 } else {
@@ -479,20 +511,20 @@
             requestAnimationFrame(animate);
 
             const delta = clock.getDelta();
-            const elapsedTime = performance.now() / 1000; // секунды
+            const elapsedTime = performance.now() / 1000;
 
-            // Обновляем uniform времени для мерцания звёзд
+            // Обновляем мерцание звёзд
             if (stars.material.uniforms) {
                 stars.material.uniforms.time.value = elapsedTime;
             }
 
-            // Медленное вращение звёздного поля
+            // Вращение звёздного поля
             stars.rotation.y += 0.0001;
             stars.rotation.x += 0.00005;
 
-            // Анимация падающих звёзд
+            // Анимация метеоров
             meteors.forEach(meteor => {
-                meteor.position.x += meteor.userData.speed.x * delta * 30; // корректировка скорости
+                meteor.position.x += meteor.userData.speed.x * delta * 30;
                 meteor.position.y += meteor.userData.speed.y * delta * 30;
                 meteor.position.z += meteor.userData.speed.z * delta * 30;
                 
@@ -501,14 +533,13 @@
                     resetMeteor(meteor);
                 }
                 
-                // Мерцание (изменение прозрачности)
                 meteor.material.opacity = 0.6 + 0.4 * Math.sin(elapsedTime * 5 + meteor.userData.life);
             });
 
             updateHandModel();
             controls.update();
 
-            // Вращение фигур
+            // Вращение фигур (кроме захваченной)
             shapes.forEach(shape => {
                 if (shape !== grabbedShape) {
                     shape.rotation.y += 0.002;
