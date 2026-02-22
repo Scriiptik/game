@@ -15,21 +15,15 @@ html,body{
   color:white;
 }
 
-/* ===== ОСНОВНОЙ КАНВАС (скрыт на мобильных) ===== */
+/* ===== ЗВЁЗДЫ (ПК) ===== */
 #stars{
   position:fixed;
   inset:0;
   z-index:0;
   display:block;
 }
-/* На мобильных скрываем */
-@media (max-width: 768px) {
-  #stars {
-    display: none;
-  }
-}
 
-/* ===== UI ===== */
+/* ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== */
 .glass{
   background:rgba(255,255,255,.08);
   backdrop-filter:blur(14px);
@@ -38,73 +32,117 @@ html,body{
   border-radius:20px;
 }
 
-/* Центральный игровой блок (для десктопа остаётся по центру, для мобильных — адаптируем) */
-.game{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:360px;
-  padding:20px;
-  z-index:3;
-}
-
-/* Мобильная адаптация: смещаем игровой блок вверх, добавляем нижние панели */
-@media (max-width: 768px) {
-  .game {
-    position: fixed;
-    left: 0;
-    top: 0;
-    transform: none;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
-    backdrop-filter: none;
-    border: none;
-    box-shadow: none;
-    padding: 10px;
-  }
-  .game .glass {
-    width: 100%;
-    max-width: 360px;
-    margin: 10px auto;
-    padding: 15px;
-  }
-  /* нижние панели */
-  .bottom-panels {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+/* ---------- ПК версия (ширина > 768px) ---------- */
+@media (min-width: 769px) {
+  /* Левая панель */
+  .desktop-panels {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 4;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    z-index: 5;
+    width: 260px;
   }
-  .panel {
+  .desktop-panel {
     width: 100%;
   }
   .panel-content {
+    margin-top: 8px;
     max-height: 0;
     overflow: hidden;
-    transition: 0.3s;
+    transition: 0.4s;
   }
   .panel-content.open {
-    max-height: 300px;
+    max-height: 500px;
     overflow-y: auto;
   }
-  /* Кнопка клика крупнее */
-  .click-btn {
-    width: 200px;
-    height: 200px;
-    font-size: 28px;
-    margin: 20px auto;
+  
+  /* Центральный игровой блок */
+  .game {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 360px;
+    padding: 20px;
+    z-index: 3;
   }
-  /* Иллюминатор на весь экран при открытии */
+  
+  /* Фон-предметы */
+  .bg-items {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+  .bg-item {
+    position: absolute;
+    width: 60px;
+    animation: float 6s ease-in-out infinite, spin 30s linear infinite;
+    cursor: grab;
+  }
+  
+  /* Скрываем мобильные элементы */
+  .mobile-header {
+    display: none;
+  }
+  #illuminatorPanel {
+    display: none;
+  }
+}
+
+/* ---------- Мобильная версия (ширина ≤ 768px) ---------- */
+@media (max-width: 768px) {
+  /* Отключаем звёзды на фоне */
+  #stars {
+    display: none;
+  }
+  
+  /* Верхняя панель с тремя кнопками */
+  .mobile-header {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    z-index: 10;
+  }
+  .mobile-header button {
+    flex: 1;
+    padding: 8px 0;
+    font-size: 14px;
+    margin: 0;
+    background: rgba(255,255,255,.15);
+    border: none;
+    border-radius: 20px;
+    color: white;
+  }
+  .mobile-header button:active {
+    transform: scale(0.96);
+  }
+  
+  /* Контейнеры для выезжающих панелей */
+  .mobile-panel {
+    position: fixed;
+    top: 55px;
+    left: 10px;
+    right: 10px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    z-index: 9;
+    background: rgba(10, 20, 30, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+  }
+  .mobile-panel.open {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  
+  /* Иллюминатор внутри мобильной панели */
   #illuminator-container {
     width: 100%;
     height: 250px;
@@ -113,13 +151,69 @@ html,body{
     overflow: hidden;
     border-radius: 16px;
   }
+  .illuminator-item {
+    position: absolute;
+    width: 60px;
+    cursor: grab;
+    animation: float 6s ease-in-out infinite, spin 30s linear infinite;
+    z-index: 3;
+  }
+  #illuminator-stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* Игровой блок по центру */
+  .game {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 360px;
+    padding: 15px;
+    text-align: center;
+    z-index: 5;
+  }
+  
+  .click-btn {
+    width: 180px;
+    height: 180px;
+    font-size: 24px;
+    margin: 10px auto;
+  }
+  
+  .controls {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+  }
+  
+  /* Скрываем десктопные панели */
+  .desktop-panels {
+    display: none;
+  }
+  .bg-items {
+    display: none;
+  }
 }
 
-/* ===== КНОПКИ ===== */
+/* Общие стили для элементов */
+.item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.item img{width:36px; height:36px; object-fit:cover; border-radius:8px;}
+
 button{
-  width:100%;
-  margin-top:8px;
-  padding:10px;
   border:none;
   border-radius:12px;
   background:rgba(255,255,255,.15);
@@ -136,78 +230,17 @@ button:disabled{
   pointer-events:none;
 }
 
-.click-btn{
-  width:160px;height:160px;
-  border-radius:50%;
-  background:radial-gradient(circle,#00ffd5,#00b3a4);
-  box-shadow:0 0 40px rgba(0,255,213,.7);
-  font-size:22px;
-  border: none;
-  color: white;
-  font-weight: bold;
-}
-
-/* ===== ФОН-ПРЕДМЕТЫ (десктоп) ===== */
-.bg-items{
-  position:absolute;
-  inset:0;
-  z-index:2;
-}
-.bg-item{
-  position:absolute;
-  width:60px;
-  animation:float 6s ease-in-out infinite, spin 30s linear infinite;
-  cursor:grab;
-}
-
-/* ===== ИЛЛЮМИНАТОР (мобильный) ===== */
-#illuminator-container{
-  position:relative;
-  width:100%;
-  height:300px;
-  background:rgba(0,0,0,0.3);
-  border-radius:16px;
-  overflow:hidden;
-  margin-top:8px;
-}
-.illuminator-item{
-  position:absolute;
-  width:60px;
-  cursor:grab;
-  animation:float 6s ease-in-out infinite, spin 30s linear infinite;
-  z-index:3;
-}
-#illuminator-stars {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* ===== ЧАСТИЦЫ ===== */
 .particle{
   position:absolute;
   color:#00ffd5;
   pointer-events:none;
   animation:part 1s forwards;
   z-index:10;
-  font-weight: bold;
-  text-shadow: 0 0 10px #00ffd5;
+  font-weight:bold;
+  text-shadow:0 0 10px #00ffd5;
 }
 @keyframes part{
   to{opacity:0;transform:translateY(-60px)}
-}
-
-.controls{
-  display:flex;
-  gap:5px;
-  margin-top:10px;
-}
-.controls button{
-  margin:0;
 }
 
 @keyframes float{
@@ -220,18 +253,67 @@ button:disabled{
 }
 </style>
 </head>
-
 <body>
 
-<!-- Основной канвас звёзд (виден только на десктопе) -->
+<!-- Звёздный фон для ПК -->
 <canvas id="stars"></canvas>
 
-<!-- Фон для предметов на десктопе -->
+<!-- Десктопные панели (видны только на ПК) -->
+<div class="desktop-panels">
+  <!-- Магазин -->
+  <div class="desktop-panel glass">
+    <button id="toggleShopDesktop">🛒 Магазин</button>
+    <div class="panel-content glass" id="shopDesktop"></div>
+  </div>
+  <!-- Музыка -->
+  <div class="desktop-panel glass">
+    <button id="toggleMusicDesktop">🎵 Музыка</button>
+    <div class="panel-content glass" id="musicDesktop">
+      <button id="musicMelody1">🎹 Мелодия 1</button>
+      <button id="musicMelody2">🎸 Мелодия 2</button>
+      <button id="musicMelody3">🌌 Космическая</button>
+      <button id="musicMelody4">🚀 Интерстеллар</button>
+      <button id="musicOff">🔇 Выключить</button>
+    </div>
+  </div>
+  <!-- Иллюминатор на ПК скрыт, но можно добавить при желании -->
+</div>
+
+<!-- Мобильный верхний хедер (виден только на мобильных) -->
+<div class="mobile-header">
+  <button id="mobileShopBtn">🛒</button>
+  <button id="mobileMusicBtn">🎵</button>
+  <button id="mobileIlluminatorBtn">🔮</button>
+</div>
+
+<!-- Мобильные панели (содержимое) -->
+<div class="mobile-panel" id="mobileShopPanel">
+  <div class="glass" style="padding:10px;" id="shopMobile"></div>
+</div>
+<div class="mobile-panel" id="mobileMusicPanel">
+  <div class="glass" style="padding:10px;">
+    <button id="musicMelody1_mob">🎹 Мелодия 1</button>
+    <button id="musicMelody2_mob">🎸 Мелодия 2</button>
+    <button id="musicMelody3_mob">🌌 Космическая</button>
+    <button id="musicMelody4_mob">🚀 Интерстеллар</button>
+    <button id="musicOff_mob">🔇 Выключить</button>
+  </div>
+</div>
+<div class="mobile-panel" id="mobileIlluminatorPanel">
+  <div class="glass" style="padding:10px;">
+    <div id="illuminator-container">
+      <canvas id="illuminator-stars"></canvas>
+      <!-- сюда будут добавляться предметы -->
+    </div>
+  </div>
+</div>
+
+<!-- Фон для предметов на ПК -->
 <div class="bg-items" id="bg"></div>
 
-<!-- Игровой блок -->
-<div class="game glass" id="gamePanel">
-  <div style="text-align:center;">
+<!-- Основной игровой блок -->
+<div class="game glass">
+  <div>
     <h2>⚡ Advanced Clicker</h2>
     <div>Очки: <span id="score">0</span></div>
     <div>Сила клика: ×<span id="power">1</span></div>
@@ -250,86 +332,48 @@ button:disabled{
   </div>
 </div>
 
-<!-- Нижние панели для мобильных (скрыты на десктопе через медиа-запрос) -->
-<div class="bottom-panels">
-  <!-- Магазин -->
-  <div class="panel glass" id="shopPanel">
-    <button id="toggleShop">🛒 Магазин</button>
-    <div class="panel-content glass" id="shop"></div>
-  </div>
-
-  <!-- Музыка -->
-  <div class="panel glass" id="musicPanel">
-    <button id="toggleMusic">🎵 Музыка</button>
-    <div class="panel-content glass" id="musicPanelContent">
-      <button id="musicMelody1">🎹 Мелодия 1</button>
-      <button id="musicMelody2">🎸 Мелодия 2</button>
-      <button id="musicMelody3">🌌 Космическая</button>
-      <button id="musicMelody4">🚀 Интерстеллар</button>
-      <button id="musicOff">🔇 Выключить</button>
-    </div>
-  </div>
-
-  <!-- Иллюминатор (только для мобильных) -->
-  <div class="panel glass" id="illuminatorPanel" style="display:none;">
-    <button id="toggleIlluminator">🔮 Иллюминатор</button>
-    <div class="panel-content glass" id="illuminatorContent">
-      <div id="illuminator-container">
-        <canvas id="illuminator-stars"></canvas>
-        <!-- сюда будут добавляться предметы -->
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-/* ===== ЗВЁЗДЫ ДЛЯ ДЕСКТОПА ===== */
+/* ===== ЗВЁЗДЫ ДЛЯ ПК ===== */
 const c = document.getElementById("stars");
-const ctx = c.getContext("2d");
-function resizeStars(){
-  c.width = window.innerWidth;
-  c.height = window.innerHeight;
-}
-resizeStars();
-window.addEventListener('resize', resizeStars);
+if (c) {
+  const ctx = c.getContext("2d");
+  function resizeStars(){
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+  resizeStars();
+  window.addEventListener('resize', resizeStars);
 
-const starsDesktop = [...Array(7500)].map(()=>({
-  x: Math.random() * c.width,
-  y: Math.random() * c.height,
-  s: Math.random() * 1.5
-}));
-function drawStarsDesktop(){
-  ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle = "white";
-  starsDesktop.forEach(st => {
-    ctx.globalAlpha = Math.random() * 0.8 + 0.2;
-    ctx.fillRect(st.x, st.y, st.s, st.s);
-    st.y += st.s * 0.3;
-    if(st.y > c.height) st.y = 0;
-  });
-  requestAnimationFrame(drawStarsDesktop);
-}
-// Запускаем только если не мобильный (на мобильных скрыт canvas через CSS)
-if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth > 768) {
-  drawStarsDesktop();
+  const starsDesktop = [...Array(7500)].map(()=>({
+    x: Math.random() * c.width,
+    y: Math.random() * c.height,
+    s: Math.random() * 1.5
+  }));
+  function drawStarsDesktop(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle = "white";
+    starsDesktop.forEach(st => {
+      ctx.globalAlpha = Math.random() * 0.8 + 0.2;
+      ctx.fillRect(st.x, st.y, st.s, st.s);
+      st.y += st.s * 0.3;
+      if(st.y > c.height) st.y = 0;
+    });
+    requestAnimationFrame(drawStarsDesktop);
+  }
+  // Запускаем только если ПК (ширина > 768)
+  if (window.innerWidth > 768) {
+    drawStarsDesktop();
+  }
 }
 
-/* ===== ОПРЕДЕЛЕНИЕ МОБИЛЬНОСТИ ===== */
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-const illuminatorPanel = document.getElementById('illuminatorPanel');
-if (isMobile) {
-  illuminatorPanel.style.display = 'block';
-  document.getElementById('bg').style.display = 'none'; // скрываем общий фон предметов
-} else {
-  illuminatorPanel.style.display = 'none';
-}
+/* ===== ОПРЕДЕЛЕНИЕ ПЛАТФОРМЫ ===== */
+const isMobile = window.innerWidth <= 768;
 
 /* ===== ЗВЁЗДЫ ДЛЯ ИЛЛЮМИНАТОРА (мобильный) ===== */
 let illStarsInterval = null;
 const illCanvas = document.getElementById('illuminator-stars');
-let illCtx = null;
 if (illCanvas) {
-  illCtx = illCanvas.getContext('2d');
+  const illCtx = illCanvas.getContext('2d');
   function resizeIllStars() {
     const container = document.getElementById('illuminator-container');
     if (container) {
@@ -359,30 +403,29 @@ if (illCanvas) {
     illStarsInterval = requestAnimationFrame(drawIllStars);
   }
 
-  // Запускаем анимацию только когда иллюминатор открыт
-  let illOpen = false;
+  // Запускаем анимацию, если открыта мобильная панель иллюминатора
   function checkIlluminatorOpen() {
-    const content = document.getElementById('illuminatorContent');
-    if (content.classList.contains('open') && !illStarsInterval) {
+    const panel = document.getElementById('mobileIlluminatorPanel');
+    if (panel && panel.classList.contains('open') && !illStarsInterval) {
       resizeIllStars();
       drawIllStars();
-    } else if (!content.classList.contains('open') && illStarsInterval) {
+    } else if ((!panel || !panel.classList.contains('open')) && illStarsInterval) {
       cancelAnimationFrame(illStarsInterval);
       illStarsInterval = null;
     }
   }
   
-  // Следим за открытием через MutationObserver
+  // Наблюдаем за классом панели
   const observer = new MutationObserver(checkIlluminatorOpen);
-  observer.observe(document.getElementById('illuminatorContent'), { attributes: true, attributeFilter: ['class'] });
+  const mobIllPanel = document.getElementById('mobileIlluminatorPanel');
+  if (mobIllPanel) observer.observe(mobIllPanel, { attributes: true, attributeFilter: ['class'] });
 }
 
 /* ===== ЗВУКИ ===== */
 const ac = new (window.AudioContext || window.webkitAudioContext)();
 let musicInterval = null;
-let currentMelody = 1; // 1,2,3,4 или 0 (выкл)
+let currentMelody = 1;
 
-// Вспомогательная функция для проигрывания последовательности нот
 function playNotes(notes, duration = 1.5, type = 'sine') {
   const now = ac.currentTime;
   notes.forEach((freq, index) => {
@@ -398,20 +441,10 @@ function playNotes(notes, duration = 1.5, type = 'sine') {
   });
 }
 
-// Мелодия 1 (аккорд C-dur)
-function playMelody1() {
-  playNotes([261.63, 329.63, 392.0], 1.5, 'sine');
-}
-
-// Мелодия 2 (аккорд Am)
-function playMelody2() {
-  playNotes([220.0, 261.63, 329.63], 1.5, 'triangle');
-}
-
-// Мелодия 3 (космическая – высокие пэды, плавные)
+function playMelody1() { playNotes([261.63, 329.63, 392.0], 1.5, 'sine'); }
+function playMelody2() { playNotes([220.0, 261.63, 329.63], 1.5, 'triangle'); }
 function playMelody3() {
   const now = ac.currentTime;
-  // Длинные высокие ноты с небольшим смещением
   [440.0, 554.37, 659.25, 880.0].forEach((freq, i) => {
     const osc = ac.createOscillator();
     const gain = ac.createGain();
@@ -424,15 +457,13 @@ function playMelody3() {
     osc.stop(now + i * 0.5 + 2.5);
   });
 }
-
-// Мелодия 4 (Интерстеллар – первые ноты темы)
 function playMelody4() {
   const now = ac.currentTime;
-  const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // восходящая гамма
+  const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
   notes.forEach((freq, i) => {
     const osc = ac.createOscillator();
     const gain = ac.createGain();
-    osc.type = 'sawtooth'; // немного "органный" звук
+    osc.type = 'sawtooth';
     osc.frequency.value = freq;
     gain.gain.setValueAtTime(0.015, now + i * 0.25);
     gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.25 + 0.8);
@@ -450,7 +481,7 @@ function startMusic() {
     currentMelody === 2 ? playMelody2 :
     currentMelody === 3 ? playMelody3 : playMelody4;
   player();
-  musicInterval = setInterval(player, 4000); // повтор каждые 4 секунды
+  musicInterval = setInterval(player, 4000);
 }
 
 function changeMelody(melody) {
@@ -462,7 +493,6 @@ function changeMelody(melody) {
   if (melody !== 0) startMusic();
 }
 
-// Звук клика
 function clickSound(){
   const now = ac.currentTime;
   const osc = ac.createOscillator();
@@ -486,17 +516,16 @@ function tryStartMusic() {
   }
 }
 
-/* ===== ИГРА ===== */
+/* ===== ИГРОВЫЕ ДАННЫЕ ===== */
 let score = 0;
 let power = 1;
 let auto = 0;
 let upPrice = 100;
 let autoPrice = 500;
 let owned = {};      // { itemId: imgUrl }
-let pos = {};        // для десктопа: { itemId: {x, y} }
-let mobilePos = {};  // для мобильных: { itemId: {x, y} } внутри иллюминатора
+let pos = {};        // для ПК: координаты
+let mobilePos = {};  // для мобильных: координаты внутри иллюминатора
 
-// Элементы интерфейса
 const scoreEl = document.getElementById('score');
 const powerEl = document.getElementById('power');
 const autoEl = document.getElementById('auto');
@@ -504,10 +533,9 @@ const upPriceSpan = document.getElementById('upPrice');
 const autoPriceSpan = document.getElementById('autoPrice');
 
 const bg = document.getElementById('bg');
-const shop = document.getElementById('shop');
 const illuminatorContainer = document.getElementById('illuminator-container');
 
-// Уникальные названия (те же)
+// Названия предметов
 const itemNames = [
   "Звёздный осколок", "Лунный камень", "Пламенное сердце", "Древняя монета", "Кристалл дракона",
   "Глаз феникса", "Руна ветра", "Жемчужина глубин", "Клык оборотня", "Перо грифона",
@@ -521,7 +549,6 @@ const itemNames = [
   "Роза ветров", "Клевер удачи", "Жёлудь мира", "Шип розы", "Лепесток лотоса"
 ];
 
-// Генерация предметов
 const items = [...Array(50)].map((_, i) => ({
   id: 'item' + i,
   name: itemNames[i],
@@ -529,7 +556,6 @@ const items = [...Array(50)].map((_, i) => ({
   img: `https://picsum.photos/seed/${i}/64`
 }));
 
-// Функция обновления интерфейса
 function update() {
   scoreEl.textContent = Math.floor(score);
   powerEl.textContent = power;
@@ -604,9 +630,9 @@ function makeDraggableInContainer(el, id) {
   };
 }
 
-/* ===== МАГАЗИН ===== */
-function renderShop() {
-  shop.innerHTML = '';
+/* ===== МАГАЗИН (рендер для обеих платформ) ===== */
+function renderShop(targetElement) {
+  targetElement.innerHTML = '';
   items.forEach(item => {
     const d = document.createElement('div');
     d.className = 'item';
@@ -627,14 +653,18 @@ function renderShop() {
           owned[item.id] = item.img;
           addItemToView(item.id, item.img);
           update();
-          renderShop();
+          renderShop(document.getElementById('shopDesktop'));
+          renderShop(document.getElementById('shopMobile'));
         }
       };
     }
-    shop.appendChild(d);
+    targetElement.appendChild(d);
   });
 }
-renderShop();
+
+// Заполняем оба магазина (десктоп и мобильный)
+renderShop(document.getElementById('shopDesktop'));
+renderShop(document.getElementById('shopMobile'));
 
 /* ===== КЛИКЕР ===== */
 document.getElementById('click').onclick = e => {
@@ -713,9 +743,8 @@ function loadGame() {
 
   if (isMobile) {
     mobilePos = JSON.parse(localStorage.getItem('clicker_mobilePos')) || {};
-    illuminatorContainer.innerHTML = '<canvas id="illuminator-stars"></canvas>'; // пересоздаём канвас
-    // восстановим ссылку
-    window.illCtx = document.getElementById('illuminator-stars').getContext('2d');
+    illuminatorContainer.innerHTML = '<canvas id="illuminator-stars"></canvas>';
+    // перезапустим звёзды
     Object.keys(owned).forEach(id => addItemToView(id, owned[id]));
   } else {
     pos = JSON.parse(localStorage.getItem('clicker_pos')) || {};
@@ -724,7 +753,8 @@ function loadGame() {
   }
 
   update();
-  renderShop();
+  renderShop(document.getElementById('shopDesktop'));
+  renderShop(document.getElementById('shopMobile'));
   alert('Прогресс загружен!');
 }
 
@@ -740,12 +770,12 @@ function resetGame() {
     mobilePos = {};
     if (isMobile) {
       illuminatorContainer.innerHTML = '<canvas id="illuminator-stars"></canvas>';
-      window.illCtx = document.getElementById('illuminator-stars').getContext('2d');
     } else {
       bg.innerHTML = '';
     }
     update();
-    renderShop();
+    renderShop(document.getElementById('shopDesktop'));
+    renderShop(document.getElementById('shopMobile'));
   }
 }
 
@@ -753,25 +783,61 @@ document.getElementById('saveBtn').onclick = saveGame;
 document.getElementById('loadBtn').onclick = loadGame;
 document.getElementById('resetBtn').onclick = resetGame;
 
-/* ===== УПРАВЛЕНИЕ ВКЛАДКАМИ ===== */
-document.getElementById('toggleShop').onclick = () => {
-  document.getElementById('shop').classList.toggle('open');
+/* ===== УПРАВЛЕНИЕ ПАНЕЛЯМИ ===== */
+// Десктоп
+document.getElementById('toggleShopDesktop').onclick = () => {
+  document.querySelector('#shopDesktop').classList.toggle('open');
 };
-document.getElementById('toggleMusic').onclick = () => {
-  document.getElementById('musicPanelContent').classList.toggle('open');
+document.getElementById('toggleMusicDesktop').onclick = () => {
+  document.querySelector('#musicDesktop').classList.toggle('open');
 };
-if (isMobile) {
-  document.getElementById('toggleIlluminator').onclick = () => {
-    document.getElementById('illuminatorContent').classList.toggle('open');
-  };
-}
 
-// Музыкальные кнопки
-document.getElementById('musicMelody1').onclick = () => { changeMelody(1); tryStartMusic(); };
-document.getElementById('musicMelody2').onclick = () => { changeMelody(2); tryStartMusic(); };
-document.getElementById('musicMelody3').onclick = () => { changeMelody(3); tryStartMusic(); };
-document.getElementById('musicMelody4').onclick = () => { changeMelody(4); tryStartMusic(); };
-document.getElementById('musicOff').onclick = () => { changeMelody(0); musicStarted = false; };
+// Мобильные кнопки
+document.getElementById('mobileShopBtn').onclick = () => {
+  document.getElementById('mobileShopPanel').classList.toggle('open');
+  document.getElementById('mobileMusicPanel').classList.remove('open');
+  document.getElementById('mobileIlluminatorPanel').classList.remove('open');
+};
+document.getElementById('mobileMusicBtn').onclick = () => {
+  document.getElementById('mobileMusicPanel').classList.toggle('open');
+  document.getElementById('mobileShopPanel').classList.remove('open');
+  document.getElementById('mobileIlluminatorPanel').classList.remove('open');
+};
+document.getElementById('mobileIlluminatorBtn').onclick = () => {
+  document.getElementById('mobileIlluminatorPanel').classList.toggle('open');
+  document.getElementById('mobileShopPanel').classList.remove('open');
+  document.getElementById('mobileMusicPanel').classList.remove('open');
+  // запустим звёзды, если открыто
+  if (illStarsInterval) cancelAnimationFrame(illStarsInterval);
+  if (document.getElementById('mobileIlluminatorPanel').classList.contains('open')) {
+    resizeIllStars();
+    drawIllStars();
+  }
+};
+
+// Музыкальные кнопки (десктоп и мобильные)
+const musicButtons = [
+  { id: 'musicMelody1', melody: 1 },
+  { id: 'musicMelody2', melody: 2 },
+  { id: 'musicMelody3', melody: 3 },
+  { id: 'musicMelody4', melody: 4 },
+  { id: 'musicOff', melody: 0 },
+  { id: 'musicMelody1_mob', melody: 1 },
+  { id: 'musicMelody2_mob', melody: 2 },
+  { id: 'musicMelody3_mob', melody: 3 },
+  { id: 'musicMelody4_mob', melody: 4 },
+  { id: 'musicOff_mob', melody: 0 }
+];
+musicButtons.forEach(b => {
+  const btn = document.getElementById(b.id);
+  if (btn) {
+    btn.onclick = () => {
+      changeMelody(b.melody);
+      if (b.melody !== 0) tryStartMusic();
+      else musicStarted = false;
+    };
+  }
+});
 </script>
 </body>
 </html>
