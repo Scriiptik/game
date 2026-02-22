@@ -81,6 +81,10 @@ button:active{
   transform:scale(.94);
   box-shadow:0 0 15px rgba(0,255,213,.8);
 }
+button:disabled{
+  opacity:0.3;
+  pointer-events:none;
+}
 
 .click-btn{
   width:160px;height:160px;
@@ -121,6 +125,15 @@ button:active{
 @keyframes part{
   to{opacity:0;transform:translateY(-60px)}
 }
+
+.controls{
+  display:flex;
+  gap:5px;
+  margin-top:10px;
+}
+.controls button{
+  margin:0;
+}
 </style>
 </head>
 
@@ -143,6 +156,12 @@ button:active{
   <button class="click-btn" id="click">КЛИК</button>
   <button id="upgrade">🔥 Усилить ×2 (<span id="upPrice">100</span>)</button>
   <button id="autoUp">🤖 Автоклик (<span id="autoPrice">500</span>)</button>
+
+  <div class="controls">
+    <button id="saveBtn">💾 Сохранить</button>
+    <button id="loadBtn">📂 Загрузить</button>
+    <button id="resetBtn">🔄 Сброс</button>
+  </div>
 </div>
 
 <script>
@@ -170,136 +189,265 @@ draw();
 
 /* ===== ЗВУКИ (Web Audio) ===== */
 const ac=new AudioContext();
+let musicInterval = null;
+
+// Приятный звук клика
 function clickSound(){
-const o=ac.createOscillator(),g=ac.createGain();
-o.type="sine";o.frequency.value=800;
-g.gain.value=.05;
-o.connect(g).connect(ac.destination);
-o.start();o.stop(ac.currentTime+.08);
+  const now = ac.currentTime;
+  const osc = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = 660; // нота ми
+  gain.gain.setValueAtTime(0.1, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+  osc.connect(gain).connect(ac.destination);
+  osc.start(now);
+  osc.stop(now + 0.15);
 }
-function music(){
-const o=ac.createOscillator(),g=ac.createGain();
-o.type="triangle";o.frequency.value=120;
-g.gain.value=.02;
-o.connect(g).connect(ac.destination);
-o.start();
+
+// Фоновая музыка (зацикленный аккорд C‑dur)
+function startBackgroundMusic() {
+  if (musicInterval) return;
+  musicInterval = setInterval(() => {
+    const now = ac.currentTime;
+    // Аккорд: до, ми, соль
+    [261.63, 329.63, 392.0].forEach(freq => {
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.02, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(now);
+      osc.stop(now + 1.5);
+    });
+  }, 3000); // каждые 3 секунды
 }
-music();
+
+// Музыка стартует после первого клика
+let musicStarted = false;
+function tryStartMusic() {
+  if (!musicStarted) {
+    ac.resume();
+    startBackgroundMusic();
+    musicStarted = true;
+  }
+}
 
 /* ===== ИГРА ===== */
-let score=+localStorage.score||0;
-let power=+localStorage.power||1;
-let auto=+localStorage.auto||0;
-let upPrice=+localStorage.upPrice||100;
-let autoPrice=+localStorage.autoPrice||500;
-let owned=JSON.parse(localStorage.owned||"{}");
-let pos=JSON.parse(localStorage.pos||"{}");
+// Начальные значения (без автозагрузки)
+let score = 0;
+let power = 1;
+let auto = 0;
+let upPrice = 100;
+let autoPrice = 500;
+let owned = {};      // { itemId: imgUrl }
+let pos = {};        // { itemId: {x, y} }
 
-const items=[...Array(50)].map((_,i)=>({
-id:"item"+i,
-price:Math.floor(800*Math.pow(1.25,i)),
-img:`https://picsum.photos/seed/${i}/64`
+// Элементы интерфейса
+const scoreEl = document.getElementById('score');
+const powerEl = document.getElementById('power');
+const autoEl = document.getElementById('auto');
+const upPriceSpan = document.getElementById('upPrice');
+const autoPriceSpan = document.getElementById('autoPrice');
+
+const bg = document.getElementById('bg');
+const shop = document.getElementById('shop');
+
+// Генерация предметов (50 шт) с названиями
+const items = [...Array(50)].map((_, i) => ({
+  id: 'item' + i,
+  name: `Реликвия ${i+1}`,          // простые уникальные названия
+  price: Math.floor(800 * Math.pow(1.25, i)),
+  img: `https://picsum.photos/seed/${i}/64`
 }));
 
-const bg=document.getElementById("bg");
-const shop=document.getElementById("shop");
-
-function save(){
-Object.assign(localStorage,{score,power,auto,upPrice,autoPrice,
-owned:JSON.stringify(owned),pos:JSON.stringify(pos)});
+// Функция обновления интерфейса
+function update() {
+  scoreEl.textContent = Math.floor(score);
+  powerEl.textContent = power;
+  autoEl.textContent = auto;
+  upPriceSpan.textContent = upPrice;
+  autoPriceSpan.textContent = autoPrice;
 }
-
-click.onclick=e=>{
-ac.resume();clickSound();
-score+=power;
-spawn(e.clientX,e.clientY,"+"+power);
 update();
+
+// Сохранение в localStorage
+function saveGame() {
+  localStorage.setItem('clicker_score', score);
+  localStorage.setItem('clicker_power', power);
+  localStorage.setItem('clicker_auto', auto);
+  localStorage.setItem('clicker_upPrice', upPrice);
+  localStorage.setItem('clicker_autoPrice', autoPrice);
+  localStorage.setItem('clicker_owned', JSON.stringify(owned));
+  localStorage.setItem('clicker_pos', JSON.stringify(pos));
+  alert('Прогресс сохранён!');
+}
+
+// Загрузка из localStorage
+function loadGame() {
+  const s = localStorage.getItem('clicker_score');
+  if (s === null) {
+    alert('Нет сохранённой игры');
+    return;
+  }
+  score = Number(s);
+  power = Number(localStorage.getItem('clicker_power')) || 1;
+  auto = Number(localStorage.getItem('clicker_auto')) || 0;
+  upPrice = Number(localStorage.getItem('clicker_upPrice')) || 100;
+  autoPrice = Number(localStorage.getItem('clicker_autoPrice')) || 500;
+  owned = JSON.parse(localStorage.getItem('clicker_owned')) || {};
+  pos = JSON.parse(localStorage.getItem('clicker_pos')) || {};
+
+  // Перестроить фон
+  bg.innerHTML = '';
+  Object.keys(owned).forEach(id => addBgItem(id, owned[id]));
+
+  update();
+  renderShop(); // обновить состояние кнопок в магазине
+  alert('Прогресс загружен!');
+}
+
+// Сброс к начальным значениям
+function resetGame() {
+  if (confirm('Сбросить весь прогресс?')) {
+    score = 0;
+    power = 1;
+    auto = 0;
+    upPrice = 100;
+    autoPrice = 500;
+    owned = {};
+    pos = {};
+    bg.innerHTML = '';
+    update();
+    renderShop();
+  }
+}
+
+/* ===== ДОБАВЛЕНИЕ ПРЕДМЕТА НА ФОН ===== */
+function addBgItem(id, imgSrc) {
+  const el = document.createElement('img');
+  el.src = imgSrc;
+  el.className = 'bg-item';
+  el.style.left = (pos[id]?.x || Math.random() * innerWidth) + 'px';
+  el.style.top = (pos[id]?.y || Math.random() * innerHeight) + 'px';
+  makeDraggable(el, id);
+  bg.appendChild(el);
+}
+
+// Перетаскивание (обновляет pos, но не сохраняет автоматически)
+function makeDraggable(el, id) {
+  let dx, dy;
+  el.onmousedown = e => {
+    e.preventDefault();
+    dx = e.clientX - el.offsetLeft;
+    dy = e.clientY - el.offsetTop;
+    document.onmousemove = m => {
+      el.style.left = (m.clientX - dx) + 'px';
+      el.style.top = (m.clientY - dy) + 'px';
+      pos[id] = { x: m.clientX - dx, y: m.clientY - dy };
+    };
+    document.onmouseup = () => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+    };
+  };
+}
+
+/* ===== МАГАЗИН ===== */
+function renderShop() {
+  shop.innerHTML = '';
+  items.forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'item';
+    const bought = owned.hasOwnProperty(item.id);
+    d.innerHTML = `
+      <img src="${item.img}">
+      <div style="flex:1">
+        <strong>${item.name}</strong><br>
+        ${bought ? '✅ Куплено' : '💰 ' + item.price}
+      </div>
+      <button ${bought ? 'disabled' : ''}>Купить</button>
+    `;
+    const btn = d.querySelector('button');
+    if (!bought) {
+      btn.onclick = () => {
+        if (score >= item.price) {
+          score -= item.price;
+          owned[item.id] = item.img;
+          // Добавляем на фон
+          addBgItem(item.id, item.img);
+          update();
+          renderShop(); // обновить магазин (кнопка станет disabled)
+        }
+      };
+    }
+    shop.appendChild(d);
+  });
+}
+renderShop();
+
+/* ===== КЛИКЕР ===== */
+document.getElementById('click').onclick = e => {
+  tryStartMusic(); // запустить фоновую музыку при первом клике
+  ac.resume();     // на всякий случай
+  clickSound();
+
+  score += power;
+  spawn(e.clientX, e.clientY, '+' + power);
+  update();
 };
 
-upgrade.onclick=()=>{
-if(score>=upPrice){
-score-=upPrice;
-power*=2;
-upPrice=Math.floor(upPrice*2.6);
-update();
-}
+// Улучшение силы клика
+document.getElementById('upgrade').onclick = () => {
+  if (score >= upPrice) {
+    score -= upPrice;
+    power *= 2;
+    upPrice = Math.floor(upPrice * 2.6);
+    update();
+  }
 };
 
-autoUp.onclick=()=>{
-if(score>=autoPrice){
-score-=autoPrice;
-auto++;
-autoPrice=Math.floor(autoPrice*2.4);
-update();
-}
+// Автокликер
+document.getElementById('autoUp').onclick = () => {
+  if (score >= autoPrice) {
+    score -= autoPrice;
+    auto++;
+    autoPrice = Math.floor(autoPrice * 2.4);
+    update();
+  }
 };
 
-toggleShop.onclick=()=>shop.classList.toggle("open");
+// Автоматический сбор автокликера
+setInterval(() => {
+  if (auto > 0) {
+    score += power * auto;
+    update();
+  }
+}, 1000);
 
-function renderShop(){
-shop.innerHTML="";
-items.forEach(i=>{
-const d=document.createElement("div");
-d.className="item";
-d.innerHTML=`<img src="${i.img}">
-<div>${i.id}<br>${owned[i.id]?"Куплено":"💰"+i.price}</div>
-<button ${owned[i.id]?"disabled":""}>Купить</button>`;
-d.querySelector("button").onclick=()=>{
-if(score>=i.price){
-score-=i.price;
-owned[i.id]=i.img;
-addBg(i.id,i.img);
-update();renderShop();
-}};
-shop.appendChild(d);
-});
+// Частицы при клике
+function spawn(x, y, text) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = text;
+  p.style.left = x + 'px';
+  p.style.top = y + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 900);
 }
 
-function addBg(id,img){
-const el=document.createElement("img");
-el.src=img;el.className="bg-item";
-el.style.left=(pos[id]?.x||Math.random()*innerWidth)+"px";
-el.style.top=(pos[id]?.y||Math.random()*innerHeight)+"px";
-drag(el,id);bg.appendChild(el);
-}
+// Кнопки сохранения/загрузки/сброса
+document.getElementById('saveBtn').onclick = saveGame;
+document.getElementById('loadBtn').onclick = loadGame;
+document.getElementById('resetBtn').onclick = resetGame;
 
-function drag(el,id){
-let dx,dy;
-el.onmousedown=e=>{
-dx=e.offsetX;dy=e.offsetY;
-document.onmousemove=m=>{
-el.style.left=m.pageX-dx+"px";
-el.style.top=m.pageY-dy+"px";
-pos[id]={x:m.pageX-dx,y:m.pageY-dy};
-};
-document.onmouseup=()=>{document.onmousemove=null;save();}
-};
-}
+// Открытие/закрытие магазина
+document.getElementById('toggleShop').onclick = () => shop.classList.toggle('open');
 
-function spawn(x,y,t){
-const p=document.createElement("div");
-p.className="particle";
-p.textContent=t;
-p.style.left=x+"px";p.style.top=y+"px";
-document.body.appendChild(p);
-setTimeout(()=>p.remove(),900);
-}
-
-setInterval(()=>{if(auto>0){score+=power*auto;update()}},1000);
-
-function update(){
-scoreEl.textContent=score;
-powerEl.textContent=power;
-autoEl.textContent=auto;
-save();
-}
-
-const scoreEl=scoreSpan=score=document.getElementById("score");
-const powerEl=document.getElementById("power");
-const autoEl=document.getElementById("auto");
-
-Object.keys(owned).forEach(id=>addBg(id,owned[id]));
-renderShop();update();
+// Инициализация пустого фона (без автозагрузки)
+// (ничего не загружаем, всё уже в начальных значениях)
 </script>
 </body>
 </html>
