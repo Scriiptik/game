@@ -207,15 +207,17 @@
       overflow-y: hidden;
     }
 
-    /* ----- ИЛЛЮМИНАТОР (мобильный с зумом/панорамой) ----- */
+    /* ----- ИЛЛЮМИНАТОР (круглый, большой) ----- */
     #illuminator-viewport {
       width: 100%;
-      height: 50vh;
+      height: 60vh;                /* чуть больше */
       overflow: hidden;
       position: relative;
       background: #010314;
-      border-radius: 28px;
+      border-radius: 50%;           /* круглый */
       touch-action: none;
+      margin: 0 auto;
+      box-shadow: 0 0 30px rgba(0,200,255,0.3);
     }
     /* канвас со звёздами (под предметами) */
     #illuminator-stars-canvas {
@@ -226,6 +228,7 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
+      border-radius: 50%;           /* тоже круглый */
     }
     #illuminator-content {
       transform-origin: 0 0;
@@ -643,15 +646,31 @@
       img.src = imgSrc;
       img.className = 'illuminator-item';
       img.dataset.id = id;
-      let x = 50, y = 50;
+
+      // ---- ИЗМЕНЕНО: появление по центру текущего видимого окна ----
+      const viewport = document.getElementById('illuminator-viewport');
+      const vpW = viewport.clientWidth;
+      const vpH = viewport.clientHeight;
+      // центр viewport в экранных координатах
+      const screenCenterX = vpW / 2;
+      const screenCenterY = vpH / 2;
+      // текущие параметры трансформации (берём из глобальных переменных, которые обновляются в touch-событиях)
+      const scale = window.currentScale !== undefined ? window.currentScale : 1;
+      const transX = window.currentTranslateX !== undefined ? window.currentTranslateX : 0;
+      const transY = window.currentTranslateY !== undefined ? window.currentTranslateY : 0;
+      // переводим в координаты контента
+      const contentX = (screenCenterX - transX) / scale - 32; // 32 = половина ширины предмета
+      const contentY = (screenCenterY - transY) / scale - 32;
+
+      let x = contentX, y = contentY;
+      // если координаты уже сохранены ранее, используем их (приоритет сохранённых)
       if (mobItemPos[id]) {
         x = mobItemPos[id].x;
         y = mobItemPos[id].y;
       } else {
-        x = Math.random() * (content.clientWidth - 70);
-        y = Math.random() * (content.clientHeight - 70);
         mobItemPos[id] = { x, y };
       }
+      // ограничивать не будем, пусть ставится ровно по центру даже за краем
       img.style.left = x + 'px';
       img.style.top = y + 'px';
       makeDraggableInIlluminator(img, id);
@@ -707,8 +726,9 @@
     }
 
     function dragMove(clientX, clientY) {
-      const dx = (clientX - startX) / currentScale; // currentScale из трансформации
-      const dy = (clientY - startY) / currentScale;
+      const scale = window.currentScale !== undefined ? window.currentScale : 1;
+      const dx = (clientX - startX) / scale;
+      const dy = (clientY - startY) / scale;
       let newX = startLeft + dx;
       let newY = startTop + dy;
       // границы
@@ -787,11 +807,11 @@
 
     function applyTransform() {
       content.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-      // передаём параметры в звёздный канвас (глобальная переменная)
+      // передаём параметры в звёздный канвас
       if (window.illuminatorTransform) {
         window.illuminatorTransform.set(scale, translateX, translateY);
       }
-      // также запоминаем для перетаскивания
+      // также запоминаем для перетаскивания и появления новых предметов
       window.currentScale = scale;
       window.currentTranslateX = translateX;
       window.currentTranslateY = translateY;
@@ -944,7 +964,7 @@
 
   // небольшой хак: обновим размер канваса иллюминатора при ресайзе
   window.addEventListener('resize', () => {
-    if (illCanvas) {
+    if (illCanvas && viewport) {
       illCanvas.width = viewport.clientWidth;
       illCanvas.height = viewport.clientHeight;
     }
@@ -956,4 +976,4 @@
 })();
 </script>
 </body>
-</html>
+</html> с телефона при открытии магазина не могу листать его список исправь это И БЛЬШЕ НИЧЕГО НЕ ТРОГАЙ
