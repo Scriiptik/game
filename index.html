@@ -2,561 +2,492 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D пространство + жесты тремя пальцами (улучшено)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Мемолента по годам 🎞️</title>
+    <!-- Библиотеки: шрифты, иконки, лёгкие анимации -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;1,400&family=Comic+Neue:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #info {
-            position: absolute;
-            top: 10px;
-            left: 10px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            transition: background 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* адаптивный контейнер */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 16px;
+            margin: 0 auto;
+        }
+
+        /* шапка с динамическим годом (для примера меняется редко) */
+        .header {
+            text-align: center;
+            padding: 20px 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 15px;
-            border-radius: 20px;
-            pointer-events: none;
-            z-index: 10;
-            font-size: 14px;
-            backdrop-filter: blur(5px);
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 100%;
         }
-        #status {
-            position: absolute;
-            bottom: 80px;
-            left: 20px;
-            color: #aaa;
-            background: rgba(0,0,0,0.4);
+        .header h1 {
+            font-size: clamp(1.8rem, 8vw, 3rem);
+            font-family: 'Comic Neue', cursive;
+            letter-spacing: 2px;
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* сетка для карточек */
+        .meme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            justify-content: center;
+        }
+
+        /* базовая карточка мема */
+        .meme-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.5s ease;
+            border: 4px solid transparent; /* будет меняться по году */
+        }
+        .meme-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        /* изображение / гифка */
+        .meme-media {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* квадрат, но можно подстраивать */
+            object-fit: cover;
+            background: #ddd;
+            display: block;
+            border-bottom: 2px solid #eee;
+            cursor: pointer;
+        }
+        .meme-media.video-fit {
+            object-fit: contain; /* для видео лучше contain, но у нас только картинки/гифки */
+            background: black;
+        }
+
+        /* нижняя часть карточки */
+        .meme-info {
+            padding: 15px;
+            flex: 1;
+        }
+        .meme-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            max-height: 3.2em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .meme-year {
+            display: inline-block;
+            background: #e0e0e0;
             padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 10;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #333;
         }
-        .instruction {
-            position: absolute;
+
+        /* ===== темы в зависимости от года мема ===== */
+        .meme-card.year-2024 {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+        }
+        .meme-card.year-2024 .meme-title {
+            color: #c92a2a;
+            font-family: 'Comic Neue', cursive;
+        }
+        .meme-card.year-2023 {
+            border-color: #4ecdc4;
+            background: #f0fffe;
+        }
+        .meme-card.year-2023 .meme-title {
+            color: #1c7e7a;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+        .meme-card.year-2022 {
+            border-color: #ffe66d;
+            background: #fff9e6;
+        }
+        .meme-card.year-2022 .meme-title {
+            color: #b25f00;
+            font-style: italic;
+        }
+        .meme-card.year-2021 {
+            border-color: #c77dff;
+            background: #f3e8ff;
+        }
+        .meme-card.year-2021 .meme-title {
+            color: #5a189a;
+            text-transform: uppercase;
+        }
+        .meme-card.year-2020 {
+            border-color: #f08c00;
+            background: #fff4e0;
+        }
+        .meme-card.year-2020 .meme-title {
+            color: #d9480f;
+            font-family: 'Courier New', monospace;
+        }
+        .meme-card.year-2019 {
+            border-color: #74c69d;
+            background: #e9f7ef;
+        }
+        .meme-card.year-2019 .meme-title {
+            color: #1e5f3e;
+            text-decoration: underline wavy;
+        }
+        .meme-card.year-old { /* до 2018 */
+            border-color: #adb5bd;
+            background: #e9ecef;
+            filter: sepia(0.3);
+        }
+        .meme-card.year-old .meme-title {
+            color: #495057;
+            font-family: 'Times New Roman', serif;
+        }
+
+        /* загрузчик и конец ленты */
+        .loader {
+            text-align: center;
+            padding: 30px 10px;
+            font-size: 1.4rem;
+            color: #666;
+        }
+        .loader i {
+            margin-right: 8px;
+        }
+        .end-message {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            font-size: 1.2rem;
+        }
+
+        /* кнопка "наверх" (mobile friendly) */
+        #scrollTopBtn {
+            position: fixed;
             bottom: 20px;
             right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #764ba2;
             color: white;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            text-align: right;
-            backdrop-filter: blur(5px);
-            pointer-events: none;
-            z-index: 10;
-        }
-        .button-panel {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 20;
-            flex-wrap: wrap;
-            justify-content: center;
-            pointer-events: none;
-        }
-        .button-panel button {
-            pointer-events: auto;
-            background: rgba(30, 30, 50, 0.8);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 40px;
-            font-size: 16px;
-            font-weight: 500;
+            border: none;
+            font-size: 1.5rem;
             cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            min-width: 100px;
-            border: 1px solid rgba(255,215,0,0.3);
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 999;
+            transition: background 0.2s;
         }
-        .button-panel button:hover {
-            background: rgba(80, 80, 120, 0.9);
-            transform: scale(1.05);
-            border-color: gold;
+        #scrollTopBtn:hover {
+            background: #5a3d7a;
         }
-        .button-panel button:active {
-            transform: scale(0.95);
+        @media (max-width: 600px) {
+            .meme-grid {
+                grid-template-columns: 1fr;
+            }
+            #scrollTopBtn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+                bottom: 15px;
+                right: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="info">🖐️ Жест «щепоть» (три пальца) для захвата</div>
-    <div id="status">Ожидание руки...</div>
-    <div class="instruction">👆 Соедините большой, указательный и средний — захват<br>🖱️ Мышь/тач — вращение камеры</div>
-    <div class="button-panel">
-        <button id="addCube">➕ Куб</button>
-        <button id="addSphere">⚪ Сфера</button>
-        <button id="addCylinder">📦 Цилиндр</button>
-        <button id="addTorus">🍩 Тор</button>
+    <header class="header animate__animated animate__fadeInDown">
+        <h1><i class="fas fa-robot"></i> Мемолента <i class="fas fa-laugh-squint"></i></h1>
+        <p>Скролль вниз — мемы подгружаются сами. Каждый год — свой стиль!</p>
+    </header>
+
+    <div class="container">
+        <div id="memeContainer" class="meme-grid">
+            <!-- карточки будут добавляться сюда -->
+        </div>
+        <div id="loader" class="loader">
+            <i class="fas fa-spinner fa-pulse"></i> Загружаем мемные архивы...
+        </div>
+        <div id="endMessage" class="end-message" style="display: none;">
+            <i class="fas fa-hourglass-end"></i> Вы доскроллили до дна мемохранилища (но это не точно)
+        </div>
     </div>
 
-    <!-- Подключаем Three.js и OrbitControls -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+    <button id="scrollTopBtn" title="Наверх"><i class="fas fa-arrow-up"></i></button>
+
+    <!-- Подключаем axios для удобства запросов -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        (function() {
+            // DOM элементы
+            const container = document.getElementById('memeContainer');
+            const loader = document.getElementById('loader');
+            const endMessage = document.getElementById('endMessage');
+            const scrollBtn = document.getElementById('scrollTopBtn');
+
+            // Состояние
+            let after = null;          // для пагинации Reddit
+            let loading = false;
+            let hasMore = true;
+            let requestCount = 0;       // для разнообразия subreddits
+            const subreddits = ['memes', 'dankmemes', 'wholesomememes', 'AdviceAnimals', 'MemeEconomy'];
+
+            // --- Функция определения года и класса ---
+            function getYearClass(timestamp) {
+                const date = new Date(timestamp * 1000);
+                const year = date.getFullYear();
+                if (year >= 2024) return 'year-2024';
+                if (year === 2023) return 'year-2023';
+                if (year === 2022) return 'year-2022';
+                if (year === 2021) return 'year-2021';
+                if (year === 2020) return 'year-2020';
+                if (year === 2019) return 'year-2019';
+                return 'year-old'; // 2018 и ранее
             }
-        }
-    </script>
 
-    <!-- MediaPipe Hands -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+            // --- Вспомогательная функция: проверка, является ли URL изображением/гифкой ---
+            function isImageOrGif(url) {
+                if (!url) return false;
+                const ext = url.split('?')[0].toLowerCase(); // отсекаем параметры
+                return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif') || ext.includes('.gifv'); // gifv обработаем как гифку
+            }
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        // --- Настройка сцены ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a20);
-
-        // --- Камера и рендерер ---
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(2, 1.5, 4);
-        camera.lookAt(0, 0.5, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        renderer.shadowMap.enabled = false;
-        renderer.setClearColor(0x0a0a20);
-        document.body.appendChild(renderer.domElement);
-
-        // --- Орбитальный контроллер ---
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = true;
-        controls.maxDistance = 8;
-        controls.minDistance = 2;
-        controls.target.set(0, 0.5, 0);
-
-        // --- Освещение ---
-        const ambientLight = new THREE.AmbientLight(0x404060);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-        dirLight.position.set(1, 3, 2);
-        scene.add(dirLight);
-        const pointLight = new THREE.PointLight(0x4466ff, 0.8);
-        pointLight.position.set(-2, 1, 2);
-        scene.add(pointLight);
-
-        // --- Туман ---
-        scene.fog = new THREE.FogExp2(0x0a0a20, 0.08);
-
-        // --- Пол и решётка ---
-        const planeGeometry = new THREE.CircleGeometry(3, 32);
-        const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a4a, emissive: 0x111122, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
-        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        plane.rotation.x = -Math.PI / 2;
-        plane.position.y = -0.2;
-        scene.add(plane);
-
-        const gridHelper = new THREE.GridHelper(6, 20, 0x88aaff, 0x335588);
-        gridHelper.position.y = -0.19;
-        scene.add(gridHelper);
-
-        // --- ЗВЁЗДНОЕ ПОЛЕ (мерцающие точки) ---
-        const starGeometry = new THREE.BufferGeometry();
-        const starCount = 3000;
-        const positions = new Float32Array(starCount * 3);
-        const colors = new Float32Array(starCount * 3);
-        const sizes = new Float32Array(starCount);
-        
-        for (let i = 0; i < starCount; i++) {
-            const r = 40 + Math.random() * 40;
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            
-            const x = r * Math.sin(phi) * Math.cos(theta);
-            const y = r * Math.sin(phi) * Math.sin(theta);
-            const z = r * Math.cos(phi);
-            
-            positions[i*3] = x;
-            positions[i*3+1] = y;
-            positions[i*3+2] = z;
-            
-            colors[i*3] = 0.8 + Math.random() * 0.4;
-            colors[i*3+1] = 0.7 + Math.random() * 0.5;
-            colors[i*3+2] = 0.6 + Math.random() * 0.5;
-            
-            sizes[i] = Math.random() * 0.3 + 0.1;
-        }
-        
-        starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        
-        const starMaterial = new THREE.ShaderMaterial({
-            uniforms: { time: { value: 0 } },
-            vertexShader: `
-                attribute float size;
-                attribute vec3 color;
-                varying vec3 vColor;
-                varying float vSize;
-                uniform float time;
-                void main() {
-                    vColor = color;
-                    float flicker = 0.7 + 0.5 * sin(size * 10.0 + time * 3.0);
-                    vSize = size * flicker;
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = vSize * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
+            // --- Функция для получения чистого URL медиа из поста Reddit ---
+            function getMediaUrl(post) {
+                // Сначала проверяем, есть ли preview с images (самое надёжное для статичных)
+                if (post.preview && post.preview.images && post.preview.images[0]) {
+                    const source = post.preview.images[0].source;
+                    if (source && source.url) {
+                        // декодируем &amp; и прочее
+                        let url = source.url.replace(/&amp;/g, '&');
+                        // Reddit отдаёт заэкранированные URL
+                        return url;
+                    }
                 }
-            `,
-            fragmentShader: `
-                varying vec3 vColor;
-                varying float vSize;
-                void main() {
-                    vec2 cxy = 2.0 * gl_PointCoord - 1.0;
-                    float r = dot(cxy, cxy);
-                    if (r > 1.0) discard;
-                    float alpha = (1.0 - r) * 0.9;
-                    gl_FragColor = vec4(vColor, alpha);
+                // Если это напрямую изображение (url)
+                if (post.url && isImageOrGif(post.url)) {
+                    return post.url;
                 }
-            `,
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending
-        });
-        
-        const stars = new THREE.Points(starGeometry, starMaterial);
-        scene.add(stars);
-
-        // --- ПАДАЮЩИЕ ЗВЁЗДЫ (метеоры) ---
-        const meteorCount = 12;
-        const meteors = [];
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 64;
-        canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        
-        const gradient = ctx.createLinearGradient(0, 0, 64, 64);
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        gradient.addColorStop(0.4, 'rgba(255, 200, 100, 0.8)');
-        gradient.addColorStop(0.8, 'rgba(100, 150, 255, 0.3)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 64, 64);
-        
-        ctx.beginPath();
-        ctx.arc(20, 20, 8, 0, Math.PI * 2);
-        ctx.fillStyle = 'white';
-        ctx.shadowColor = 'cyan';
-        ctx.shadowBlur = 10;
-        ctx.fill();
-        
-        const meteorTexture = new THREE.CanvasTexture(canvas);
-        
-        function resetMeteor(meteor) {
-            meteor.position.x = (Math.random() - 0.5) * 60;
-            meteor.position.y = 30 + Math.random() * 30;
-            meteor.position.z = (Math.random() - 0.5) * 60;
-            
-            meteor.userData = {
-                speed: new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.15,
-                    -0.4 - Math.random() * 0.5,
-                    (Math.random() - 0.5) * 0.15
-                ),
-                life: Math.random() * 100,
-                maxLife: 120 + Math.random() * 80
-            };
-        }
-        
-        for (let i = 0; i < meteorCount; i++) {
-            const spriteMaterial = new THREE.SpriteMaterial({ 
-                map: meteorTexture, 
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                transparent: true
-            });
-            const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(0.8, 0.8, 1);
-            resetMeteor(sprite);
-            scene.add(sprite);
-            meteors.push(sprite);
-        }
-
-        // --- Фигуры (массив) ---
-        const shapes = [];
-
-        // --- Функции создания фигур (оптимизированные) ---
-        function createCube() {
-            const geo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xff5733, emissive: 0x331100 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set((Math.random()-0.5)*2, 0.3, (Math.random()-0.5)*2);
-            scene.add(mesh);
-            shapes.push(mesh);
-        }
-
-        function createSphere() {
-            const geo = new THREE.SphereGeometry(0.35, 10, 8);
-            const mat = new THREE.MeshStandardMaterial({ color: 0x33ff57, emissive: 0x113311 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set((Math.random()-0.5)*2, 0.35, (Math.random()-0.5)*2);
-            scene.add(mesh);
-            shapes.push(mesh);
-        }
-
-        function createCylinder() {
-            const geo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 8);
-            const mat = new THREE.MeshStandardMaterial({ color: 0x3357ff, emissive: 0x111133 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set((Math.random()-0.5)*2, 0.3, (Math.random()-0.5)*2);
-            scene.add(mesh);
-            shapes.push(mesh);
-        }
-
-        function createTorus() {
-            const geo = new THREE.TorusGeometry(0.35, 0.1, 8, 16);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xff33f5, emissive: 0x331133 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set((Math.random()-0.5)*2, 0.35, (Math.random()-0.5)*2);
-            mesh.rotation.x = Math.PI / 2;
-            mesh.rotation.z = Math.random() * Math.PI;
-            scene.add(mesh);
-            shapes.push(mesh);
-        }
-
-        document.getElementById('addCube').addEventListener('click', createCube);
-        document.getElementById('addSphere').addEventListener('click', createSphere);
-        document.getElementById('addCylinder').addEventListener('click', createCylinder);
-        document.getElementById('addTorus').addEventListener('click', createTorus);
-
-        // --- Код отслеживания руки и скелета ---
-        let handLandmarks = null;
-        const handBones = [];
-        const handJoints = [];
-        const handGroup = new THREE.Group();
-        scene.add(handGroup);
-
-        // Материалы с отключенной проверкой глубины (всегда поверх)
-        const jointMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0x442200, depthTest: false });
-        const boneMaterial = new THREE.LineBasicMaterial({ color: 0xffdd99, depthTest: false });
-
-        for (let i = 0; i < 21; i++) {
-            const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), jointMaterial);
-            sphere.visible = false;
-            handGroup.add(sphere);
-            handJoints.push(sphere);
-        }
-
-        const connections = [
-            [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
-            [0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],
-            [0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]
-        ];
-
-        connections.forEach(([i, j]) => {
-            const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0)]);
-            const line = new THREE.Line(lineGeo, boneMaterial);
-            line.visible = false;
-            handGroup.add(line);
-            handBones.push({ line, i, j });
-        });
-
-        // Визуализация точки захвата (невидимый курсор)
-        const grabPointVisual = new THREE.Mesh(
-            new THREE.SphereGeometry(0.05, 6, 4),
-            new THREE.MeshBasicMaterial({ color: 0x00aaff, depthTest: false })
-        );
-        grabPointVisual.visible = false;
-        handGroup.add(grabPointVisual);
-
-        let grabbedShape = null;
-        let highlightedShape = null; // для подсветки при наведении
-        const grabThreshold = 0.08; // расстояние между пальцами для щипка
-        const hoverRadius = 0.4; // радиус подсветки
-
-        // --- Улучшенный трекинг (modelComplexity = 1) ---
-        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({
-            selfieMode: false,
-            maxNumHands: 1,
-            modelComplexity: 1, // более точное отслеживание
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-
-        hands.onResults(onHandResults);
-
-        const videoElement = document.createElement('video');
-        videoElement.style.display = 'none';
-        const cameraObj = new Camera(videoElement, {
-            onFrame: async () => { await hands.send({ image: videoElement }); },
-            width: 640, height: 480
-        });
-        cameraObj.start().catch(e => {
-            document.getElementById('status').textContent = 'Ошибка камеры';
-            console.error(e);
-        });
-
-        function onHandResults(results) {
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                handLandmarks = results.multiHandLandmarks[0].map(lm => new THREE.Vector3(lm.x, lm.y, lm.z));
-                document.getElementById('status').textContent = 'Рука обнаружена';
-                handJoints.forEach(j => j.visible = true);
-                handBones.forEach(b => b.line.visible = true);
-            } else {
-                handLandmarks = null;
-                document.getElementById('status').textContent = 'Рука не видна';
-                handJoints.forEach(j => j.visible = false);
-                handBones.forEach(b => b.line.visible = false);
-                grabPointVisual.visible = false;
-                if (grabbedShape) {
-                    grabbedShape.material.emissive.setHex(0x000000);
-                    grabbedShape = null;
+                // Если есть media (для гифок, иногда)
+                if (post.media && post.media.reddit_video) {
+                    // Вернём fallback изображение из превью, т.к. видео сложно встроить
+                    if (post.preview && post.preview.images && post.preview.images[0]) {
+                        return post.preview.images[0].source.url.replace(/&amp;/g, '&');
+                    }
                 }
-                if (highlightedShape) {
-                    highlightedShape.material.emissive.setHex(0x000000);
-                    highlightedShape = null;
+                // Пытаемся получить из secure_media
+                if (post.secure_media && post.secure_media.reddit_video) {
+                    if (post.preview && post.preview.images) {
+                        return post.preview.images[0].source.url.replace(/&amp;/g, '&');
+                    }
+                }
+                return null;
+            }
+
+            // --- Основная функция загрузки мемов ---
+            async function fetchMemes() {
+                if (loading || !hasMore) return;
+
+                loading = true;
+                loader.style.display = 'block';
+                endMessage.style.display = 'none';
+
+                try {
+                    // Выбираем случайный сабреддит для разнообразия
+                    const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
+                    let url = `https://www.reddit.com/r/${sub}.json?limit=15`;
+                    if (after) {
+                        url += `&after=${after}`;
+                    }
+
+                    const response = await axios.get(url, {
+                        headers: { 'User-Agent': 'MemeScroll/1.0 (desktop; mobile)' } // Reddit требует user-agent
+                    });
+
+                    const data = response.data.data;
+                    const posts = data.children;
+
+                    if (!posts || posts.length === 0) {
+                        hasMore = false;
+                        loader.style.display = 'none';
+                        endMessage.style.display = 'block';
+                        return;
+                    }
+
+                    after = data.after; // сохраняем для следующей страницы
+                    if (!after) hasMore = false;
+
+                    // Фильтруем посты, у которых есть изображение/гифка
+                    const validPosts = posts.filter(child => {
+                        const post = child.data;
+                        // Избегаем закреплённых постов, видео reddit (не встраиваются просто)
+                        if (post.stickied) return false;
+                        if (post.over_18) return false; // SFW
+                        const mediaUrl = getMediaUrl(post);
+                        return mediaUrl && isImageOrGif(mediaUrl);
+                    });
+
+                    if (validPosts.length === 0) {
+                        // Если нет валидных в этой партии, пробуем ещё раз (рекурсивно, но осторожно)
+                        if (hasMore) {
+                            loading = false; // сбросим, чтобы следующая итерация могла загрузить
+                            fetchMemes();
+                            return;
+                        }
+                    }
+
+                    // Обрабатываем каждый пост
+                    validPosts.forEach(child => {
+                        const post = child.data;
+                        const title = post.title || 'Мем без названия';
+                        const yearClass = getYearClass(post.created_utc);
+                        const mediaUrl = getMediaUrl(post);
+
+                        if (!mediaUrl) return;
+
+                        // Создаём карточку
+                        const card = document.createElement('div');
+                        card.className = `meme-card ${yearClass} animate__animated animate__fadeInUp`;
+                        card.setAttribute('data-year', yearClass);
+
+                        // Медиа элемент (картинка или гифка)
+                        let mediaElement;
+                        if (mediaUrl.toLowerCase().includes('.gif') || mediaUrl.toLowerCase().includes('.gifv')) {
+                            // Для гифок используем <img> с autoplay? лучше <img> так как гифка это изображение
+                            mediaElement = document.createElement('img');
+                            mediaElement.src = mediaUrl.replace('.gifv', '.gif'); // на всякий случай
+                            mediaElement.alt = title;
+                            mediaElement.loading = 'lazy';
+                            mediaElement.classList.add('meme-media');
+                        } else {
+                            mediaElement = document.createElement('img');
+                            mediaElement.src = mediaUrl;
+                            mediaElement.alt = title;
+                            mediaElement.loading = 'lazy';
+                            mediaElement.classList.add('meme-media');
+                        }
+
+                        // Обработка ошибок загрузки изображения (можно заменить на плейсхолдер)
+                        mediaElement.onerror = () => {
+                            mediaElement.src = 'https://via.placeholder.com/300x300?text=Мем+не+загрузился:+(';
+                        };
+
+                        // Информационный блок
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'meme-info';
+
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'meme-title';
+                        titleDiv.textContent = title.length > 70 ? title.slice(0, 70) + '…' : title;
+
+                        const yearSpan = document.createElement('span');
+                        yearSpan.className = 'meme-year';
+                        const year = new Date(post.created_utc * 1000).getFullYear();
+                        yearSpan.textContent = year + ' г.';
+
+                        infoDiv.appendChild(titleDiv);
+                        infoDiv.appendChild(yearSpan);
+
+                        card.appendChild(mediaElement);
+                        card.appendChild(infoDiv);
+
+                        container.appendChild(card);
+                    });
+
+                } catch (error) {
+                    console.error('Ошибка загрузки мемов:', error);
+                    // Показываем сообщение, но не блокируем полностью
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.gridColumn = '1 / -1';
+                    errorDiv.style.padding = '20px';
+                    errorDiv.style.background = '#ffdddd';
+                    errorDiv.style.borderRadius = '12px';
+                    errorDiv.textContent = '😿 Не удалось загрузить мемы. Попробуй позже.';
+                    container.appendChild(errorDiv);
+                } finally {
+                    loading = false;
+                    loader.style.display = 'none';
+                    if (!hasMore) {
+                        endMessage.style.display = 'block';
+                    } else {
+                        endMessage.style.display = 'none';
+                    }
                 }
             }
-        }
 
-        function updateHandModel() {
-            if (!handLandmarks) return;
-            
-            // Преобразование координат (неинвертированное: x вправо, y вверх, z вглубь)
-            const points = handLandmarks.map(lm => {
-                // x: от 0 до 1 -> от -1.5 до 1.5 (вправо)
-                const x = (lm.x - 0.5) * 3.0;
-                // y: от 0 до 1 (сверху вниз) -> инвертируем, чтобы вверх было положительно
-                const y = (0.5 - lm.y) * 2.5 + 0.5;
-                // z: от 0 до 0.5 (ближе-дальше) -> от -0.5 до 0.5
-                const z = lm.z * 2.0 - 0.5;
-                return new THREE.Vector3(x, y, z);
-            });
+            // --- Бесконечный скролл ---
+            function handleScroll() {
+                const scrollY = window.scrollY;
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
 
-            handJoints.forEach((joint, idx) => { if (idx < points.length) joint.position.copy(points[idx]); });
-            handBones.forEach(({ line, i, j }) => {
-                if (i < points.length && j < points.length) {
-                    const positions = new Float32Array([points[i].x, points[i].y, points[i].z, points[j].x, points[j].y, points[j].z]);
-                    line.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                    line.geometry.setDrawRange(0, 2);
-                    line.geometry.attributes.position.needsUpdate = true;
+                // Если осталось меньше 400px до низа - загружаем
+                if (scrollY + windowHeight >= documentHeight - 400) {
+                    fetchMemes();
                 }
-            });
 
-            // Точка захвата (среднее между большим, указательным и средним)
-            if (points.length > 0) {
-                const thumbTip = points[4];
-                const indexTip = points[8];
-                const middleTip = points[12];
-                const grabPoint = new THREE.Vector3().addVectors(thumbTip, indexTip).add(middleTip).multiplyScalar(1/3);
-                
-                // Визуализация точки захвата
-                grabPointVisual.position.copy(grabPoint);
-                grabPointVisual.visible = true;
-
-                // Проверка жеста щипка
-                const dist1 = thumbTip.distanceTo(indexTip);
-                const dist2 = thumbTip.distanceTo(middleTip);
-                const dist3 = indexTip.distanceTo(middleTip);
-                const pinchDetected = (dist1 < grabThreshold && dist2 < grabThreshold && dist3 < grabThreshold);
-
-                // Подсветка ближайшей фигуры (hover)
-                let closestDist = hoverRadius;
-                let newHighlight = null;
-                shapes.forEach(shape => {
-                    const dist = shape.position.distanceTo(grabPoint);
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        newHighlight = shape;
-                    }
-                });
-
-                // Убираем подсветку с предыдущей
-                if (highlightedShape && highlightedShape !== newHighlight) {
-                    highlightedShape.material.emissive.setHex(0x000000);
-                }
-                // Подсвечиваем новую
-                if (newHighlight && newHighlight !== grabbedShape) {
-                    newHighlight.material.emissive.setHex(0x444444); // подсветка
-                }
-                highlightedShape = newHighlight;
-
-                // Логика захвата
-                if (pinchDetected) {
-                    if (!grabbedShape && highlightedShape) {
-                        // Захватываем подсвеченный объект
-                        grabbedShape = highlightedShape;
-                        grabbedShape.material.emissive.setHex(0x884444); // более яркая подсветка при захвате
-                    } else if (grabbedShape) {
-                        // Перемещаем захваченный объект
-                        grabbedShape.position.lerp(grabPoint, 0.3);
-                    }
+                // Кнопка "наверх"
+                if (scrollY > 300) {
+                    scrollBtn.style.display = 'block';
                 } else {
-                    if (grabbedShape) {
-                        grabbedShape.material.emissive.setHex(0x000000);
-                        grabbedShape = null;
-                    }
+                    scrollBtn.style.display = 'none';
                 }
             }
-        }
 
-        // --- Анимация ---
-        let clock = new THREE.Clock();
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            const delta = clock.getDelta();
-            const elapsedTime = performance.now() / 1000;
-
-            // Обновляем мерцание звёзд
-            if (stars.material.uniforms) {
-                stars.material.uniforms.time.value = elapsedTime;
-            }
-
-            // Вращение звёздного поля
-            stars.rotation.y += 0.0001;
-            stars.rotation.x += 0.00005;
-
-            // Анимация метеоров
-            meteors.forEach(meteor => {
-                meteor.position.x += meteor.userData.speed.x * delta * 30;
-                meteor.position.y += meteor.userData.speed.y * delta * 30;
-                meteor.position.z += meteor.userData.speed.z * delta * 30;
-                
-                meteor.userData.life -= delta * 10;
-                if (meteor.userData.life <= 0 || meteor.position.y < -20) {
-                    resetMeteor(meteor);
-                }
-                
-                meteor.material.opacity = 0.6 + 0.4 * Math.sin(elapsedTime * 5 + meteor.userData.life);
+            window.addEventListener('scroll', () => {
+                requestAnimationFrame(handleScroll);
             });
 
-            updateHandModel();
-            controls.update();
-
-            // Вращение фигур (кроме захваченной)
-            shapes.forEach(shape => {
-                if (shape !== grabbedShape) {
-                    shape.rotation.y += 0.002;
-                    shape.rotation.x += 0.001;
-                }
+            // Кнопка наверх
+            scrollBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
 
-            renderer.render(scene, camera);
-        }
+            // Стартовая загрузка
+            fetchMemes();
 
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            // Периодическая проверка на случай, если контент не занял весь экран (скролла нет)
+            setTimeout(() => {
+                if (document.documentElement.scrollHeight <= window.innerHeight) {
+                    fetchMemes(); // подгрузим ещё
+                }
+            }, 500);
+        })();
     </script>
 </body>
 </html>
