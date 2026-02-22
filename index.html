@@ -6,200 +6,283 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: sans-serif;
-  color: white;
+/* ===== ФОН СО ЗВЕЗДАМИ ===== */
+body{
+  margin:0;
+  min-height:100vh;
+  background:#050b14;
+  overflow:hidden;
+  font-family:system-ui,sans-serif;
+  color:white;
 }
 
-.game {
-  width: 360px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 20px;
-  padding: 25px;
-  backdrop-filter: blur(10px);
+.stars, .stars2{
+  position:fixed;
+  inset:0;
+  background-repeat:repeat;
+  background-size:contain;
+  animation:moveStars 120s linear infinite;
+  z-index:0;
+}
+.stars{
+  background-image:
+   radial-gradient(2px 2px at 20px 30px,#fff,transparent),
+   radial-gradient(1px 1px at 100px 80px,#fff,transparent),
+   radial-gradient(1.5px 1.5px at 200px 150px,#fff,transparent);
+}
+.stars2{
+  animation-duration:200s;
+  opacity:.4;
 }
 
-h1 { margin-top: 0; }
-
-.score {
-  font-size: 22px;
-  margin-bottom: 15px;
+@keyframes moveStars{
+  from{transform:translateY(0)}
+  to{transform:translateY(-2000px)}
 }
 
-.click-btn {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  background: radial-gradient(circle,#00ffd5,#00b3a4);
-  box-shadow: 0 10px 30px rgba(0,255,213,0.5);
-  transition: transform 0.1s;
-}
-.click-btn:active { transform: scale(0.9); }
-
-button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: rgba(255,255,255,0.15);
-  color: white;
-  cursor: pointer;
+/* ===== ПАНЕЛИ ===== */
+.glass{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 20px 50px rgba(0,0,0,.4);
 }
 
-.toggle {
-  margin-top: 15px;
-  background: rgba(0,0,0,0.3);
+/* ===== ИГРА ===== */
+.game{
+  position:relative;
+  z-index:2;
+  width:360px;
+  padding:20px;
+  border-radius:20px;
+  margin:auto;
 }
 
-.shop {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.4s ease;
+.click-btn{
+  width:160px;height:160px;
+  border-radius:50%;
+  border:none;
+  background:radial-gradient(circle,#00ffd5,#00b3a4);
+  box-shadow:0 0 30px rgba(0,255,213,.6);
+  font-size:22px;
+  cursor:pointer;
+  transition:transform .1s;
+}
+.click-btn:active{transform:scale(.9)}
+
+button{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:rgba(255,255,255,.15);
+  color:white;
+  cursor:pointer;
 }
 
-.shop.open {
-  max-height: 600px;
+/* ===== МАГАЗИН ===== */
+.shop-panel{
+  position:absolute;
+  top:15px;
+  left:15px;
+  z-index:3;
+}
+.shop{
+  margin-top:6px;
+  max-height:0;
+  overflow:auto;
+  transition:.4s;
+  width:230px;
+  border-radius:14px;
+}
+.shop.open{max-height:420px}
+
+.item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.item img{width:34px}
+
+/* ===== ПРЕДМЕТЫ НА ФОНЕ ===== */
+.bg-items{
+  position:absolute;
+  inset:0;
+  z-index:1;
+}
+.bg-item{
+  position:absolute;
+  width:60px;
+  cursor:grab;
+  animation:float 6s ease-in-out infinite, spin 20s linear infinite;
+  opacity:.9;
+}
+.bg-item:active{
+  animation-play-state:paused;
 }
 
-.item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  padding: 8px;
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+@keyframes spin{
+  from{rotate:0deg}
+  to{rotate:360deg}
 }
 
-.item img {
-  width: 40px;
-  height: 40px;
+/* ===== ЧАСТИЦЫ ===== */
+.particle{
+  position:absolute;
+  color:#00ffd5;
+  animation:particle 1s forwards;
+  pointer-events:none;
 }
-
-.particle {
-  position: absolute;
-  color: #00ffd5;
-  animation: float 1s forwards;
-  pointer-events: none;
-}
-
-@keyframes float {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-60px); }
+@keyframes particle{
+  to{opacity:0;transform:translateY(-50px)}
 }
 </style>
 </head>
 
 <body>
-<div class="game">
-  <h1>⚡ Advanced Clicker</h1>
-  <div class="score">Очки: <span id="score">0</span></div>
-  <div>Сила клика: ×<span id="power">1</span></div>
 
-  <button class="click-btn" id="click">КЛИК</button>
+<div class="stars"></div>
+<div class="stars stars2"></div>
 
-  <button id="upgrade">
-    🔥 Усилить клик ×2<br>
-    Цена: <span id="upgradePrice">20</span>
-  </button>
+<div class="bg-items" id="bg"></div>
 
-  <button class="toggle" id="toggleShop">🛒 Магазин предметов</button>
+<div class="shop-panel glass">
+  <button id="toggleShop">🛒 Магазин</button>
+  <div class="shop glass" id="shop"></div>
+</div>
 
-  <div class="shop" id="shop"></div>
+<div class="game glass">
+<h2>⚡ Advanced Clicker</h2>
+<div>Очки: <span id="score">0</span></div>
+<div>Сила клика: ×<span id="power">1</span></div>
+<div>Автоклик/сек: <span id="auto">0</span></div>
+
+<button class="click-btn" id="click">КЛИК</button>
+<button id="upgrade">🔥 Усилить ×2 (<span id="upPrice">50</span>)</button>
+<button id="autoUp">🤖 Автоклик (<span id="autoPrice">200</span>)</button>
 </div>
 
 <script>
-let score = Number(localStorage.getItem("score")) || 0;
-let power = Number(localStorage.getItem("power")) || 1;
-let upgradePrice = Number(localStorage.getItem("upgradePrice")) || 20;
-let owned = JSON.parse(localStorage.getItem("owned")) || {};
+let score=+localStorage.score||0;
+let power=+localStorage.power||1;
+let upPrice=+localStorage.upPrice||50;
+let auto=+localStorage.auto||0;
+let autoPrice=+localStorage.autoPrice||200;
+let owned=JSON.parse(localStorage.owned||"{}");
+let pos=JSON.parse(localStorage.pos||"{}");
 
-const items = [
-  {id:"cat", name:"Котик", price:50, img:"https://cdn-icons-png.flaticon.com/512/616/616408.png"},
-  {id:"phone", name:"Смартфон", price:120, img:"https://cdn-icons-png.flaticon.com/512/888/888879.png"},
-  {id:"laptop", name:"Ноутбук", price:300, img:"https://cdn-icons-png.flaticon.com/512/3474/3474362.png"},
-  {id:"robot", name:"Робот", price:600, img:"https://cdn-icons-png.flaticon.com/512/4712/4712109.png"},
-  {id:"neon", name:"Неон-гаджет", price:1200, img:"https://cdn-icons-png.flaticon.com/512/1048/1048953.png"}
-];
+const items=[...Array(20)].map((_,i)=>({
+ id:"item"+i,
+ price:Math.floor(800*Math.pow(1.7,i)),
+ img:"https://cdn-icons-png.flaticon.com/512/616/616408.png"
+}));
 
-const scoreEl = document.getElementById("score");
-const powerEl = document.getElementById("power");
-const upgradeEl = document.getElementById("upgradePrice");
-const shopEl = document.getElementById("shop");
+const bg=document.getElementById("bg");
+const shop=document.getElementById("shop");
 
-function update() {
-  scoreEl.textContent = score;
-  powerEl.textContent = power;
-  upgradeEl.textContent = upgradePrice;
-  localStorage.setItem("score", score);
-  localStorage.setItem("power", power);
-  localStorage.setItem("upgradePrice", upgradePrice);
-  localStorage.setItem("owned", JSON.stringify(owned));
+function save(){
+Object.assign(localStorage,{score,power,upPrice,auto,autoPrice,
+ owned:JSON.stringify(owned),pos:JSON.stringify(pos)});
 }
 
-document.getElementById("click").onclick = (e) => {
-  score += power;
-  spawn(e.clientX,e.clientY,"+"+power);
-  update();
+document.getElementById("click").onclick=e=>{
+score+=power;
+spawn(e.clientX,e.clientY,"+"+power);
+update();
 };
 
-document.getElementById("upgrade").onclick = () => {
-  if(score >= upgradePrice){
-    score -= upgradePrice;
-    power *= 2;
-    upgradePrice = Math.floor(upgradePrice * 2.5);
-    update();
-  }
+document.getElementById("upgrade").onclick=()=>{
+if(score>=upPrice){
+score-=upPrice;power*=2;
+upPrice=Math.floor(upPrice*2.7);
+update();
+}
 };
 
-document.getElementById("toggleShop").onclick = () => {
-  shopEl.classList.toggle("open");
+document.getElementById("autoUp").onclick=()=>{
+if(score>=autoPrice){
+score-=autoPrice;auto++;
+autoPrice=Math.floor(autoPrice*2.5);
+update();
+}
 };
+
+document.getElementById("toggleShop").onclick=()=>shop.classList.toggle("open");
 
 function renderShop(){
-  shopEl.innerHTML = "";
-  items.forEach(i=>{
-    const div = document.createElement("div");
-    div.className="item";
-    div.innerHTML = `
-      <img src="${i.img}">
-      <div>${i.name}<br>${owned[i.id]?"Куплено":"Цена: "+i.price}</div>
-      <button ${owned[i.id]?"disabled":""}>Купить</button>
-    `;
-    div.querySelector("button").onclick=()=>{
-      if(score>=i.price){
-        score-=i.price;
-        owned[i.id]=true;
-        update();
-        renderShop();
-      }
-    };
-    shopEl.appendChild(div);
-  });
+shop.innerHTML="";
+items.forEach(i=>{
+const d=document.createElement("div");
+d.className="item";
+d.innerHTML=`<img src="${i.img}">
+<div>${i.id}<br>${owned[i.id]?"Куплено":"💰"+i.price}</div>
+<button ${owned[i.id]?"disabled":""}>Купить</button>`;
+d.querySelector("button").onclick=()=>{
+if(score>=i.price){
+score-=i.price;
+owned[i.id]=i.img;
+addBg(i.id,i.img);
+update();renderShop();
+}};
+shop.appendChild(d);
+});
+}
+
+function addBg(id,img){
+const el=document.createElement("img");
+el.src=img;
+el.className="bg-item";
+el.style.left=(pos[id]?.x||Math.random()*300)+"px";
+el.style.top=(pos[id]?.y||Math.random()*400)+"px";
+drag(el,id);
+bg.appendChild(el);
+}
+
+function drag(el,id){
+let dx,dy;
+el.onmousedown=e=>{
+dx=e.offsetX;dy=e.offsetY;
+document.onmousemove=m=>{
+el.style.left=m.pageX-dx+"px";
+el.style.top=m.pageY-dy+"px";
+pos[id]={x:m.pageX-dx,y:m.pageY-dy};
+};
+document.onmouseup=()=>{document.onmousemove=null;save();}
+};
 }
 
 function spawn(x,y,t){
-  const p=document.createElement("div");
-  p.className="particle";
-  p.textContent=t;
-  p.style.left=x+"px";
-  p.style.top=y+"px";
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(),1000);
+const p=document.createElement("div");
+p.className="particle";
+p.textContent=t;
+p.style.left=x+"px";
+p.style.top=y+"px";
+document.body.appendChild(p);
+setTimeout(()=>p.remove(),900);
 }
 
-renderShop();
-update();
+setInterval(()=>{score+=auto;update();},1000);
+
+function update(){
+scoreEl.textContent=score;
+powerEl.textContent=power;
+autoEl.textContent=auto;
+save();
+}
+
+const scoreEl=document.getElementById("score");
+const powerEl=document.getElementById("power");
+const autoEl=document.getElementById("auto");
+
+Object.keys(owned).forEach(id=>addBg(id,owned[id]));
+renderShop();update();
 </script>
 </body>
 </html>
