@@ -41,7 +41,7 @@
       box-shadow: 0 20px 40px rgba(0, 10, 30, 0.6);
     }
 
-    /* ----- КНОПКА КЛИКА (круглая, центрированная) ----- */
+    /* ----- КНОПКА КЛИКА (круглая) ----- */
     .click-btn {
       width: 200px;
       height: 200px;
@@ -64,7 +64,7 @@
       box-shadow: 0 0 60px #ffdd44, 0 5px 15px black;
     }
 
-    /* ----- общий центр для game ----- */
+    /* ----- общий центр ----- */
     .game {
       position: absolute;
       left: 50%;
@@ -217,13 +217,7 @@
       border-radius: 28px;
       touch-action: none;
     }
-    #illuminator-content {
-      transform-origin: 0 0;
-      width: 100%;
-      height: 100%;
-      position: relative;
-      will-change: transform;
-    }
+    /* канвас со звёздами (под предметами) */
     #illuminator-stars-canvas {
       position: absolute;
       top: 0;
@@ -232,6 +226,14 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
+    }
+    #illuminator-content {
+      transform-origin: 0 0;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      will-change: transform;
+      z-index: 2;
     }
     .illuminator-item {
       position: absolute;
@@ -248,6 +250,22 @@
     @keyframes float {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-8px); }
+    }
+
+    /* всплывающее число при клике */
+    .floating-number {
+      position: fixed;
+      font-size: 32px;
+      font-weight: bold;
+      color: gold;
+      text-shadow: 0 0 20px orange;
+      pointer-events: none;
+      z-index: 1000;
+      animation: floatUp 1s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
     }
 
     /* общие предметы */
@@ -308,10 +326,8 @@
 <div class="mobile-panel glass" id="mobileIlluminatorPanel">
   <div style="padding:10px;">
     <div id="illuminator-viewport">
-      <div id="illuminator-content">
-        <canvas id="illuminator-stars-canvas"></canvas>
-        <!-- предметы добавляются сюда -->
-      </div>
+      <canvas id="illuminator-stars-canvas"></canvas>
+      <div id="illuminator-content"></div>
     </div>
     <p style="text-align:center; margin:6px 0;">👆 двумя пальцами zoom / pan</p>
   </div>
@@ -364,6 +380,15 @@
   const upPriceSpan = document.getElementById('upPrice');
   const autoPriceSpan = document.getElementById('autoPrice');
 
+  function updateStats() {
+    scoreEl.textContent = Math.floor(score);
+    powerEl.textContent = power;
+    autoEl.textContent = auto;
+    upPriceSpan.textContent = upPrice;
+    autoPriceSpan.textContent = autoPrice;
+  }
+  updateStats();
+
   // --------------------------------------------------------------
   // 2. Генерация предметов (50 штук)
   // --------------------------------------------------------------
@@ -387,26 +412,13 @@
   }));
 
   // --------------------------------------------------------------
-  // 3. Функции обновления UI
-  // --------------------------------------------------------------
-  function updateStats() {
-    scoreEl.textContent = Math.floor(score);
-    powerEl.textContent = power;
-    autoEl.textContent = auto;
-    upPriceSpan.textContent = upPrice;
-    autoPriceSpan.textContent = autoPrice;
-  }
-  updateStats();
-
-  // --------------------------------------------------------------
-  // 4. Звуки / Музыка (10 треков + ИНТЕРСТЕЛЛАР)
+  // 3. Звуки / Музыка (10 треков + ИНТЕРСТЕЛЛАР)
   // --------------------------------------------------------------
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const ac = new AudioContext();
   let musicInterval = null;
   let currentMelody = 0; // 0 = off
 
-  // базовая функция проигрывания нот
   function playNotes(notes, duration = 1.2, type = 'sine', baseTime = 0.3) {
     const now = ac.currentTime;
     notes.forEach((freq, idx) => {
@@ -422,41 +434,29 @@
     });
   }
 
-  // Мелодия 1 (светлая)
   const m1 = () => playNotes([261.63, 329.63, 392.00, 523.25], 1.0, 'sine', 0.25);
-  // Мелодия 2 (мистическая)
   const m2 = () => playNotes([220, 174.61, 261.63, 329.63], 1.5, 'triangle', 0.35);
-  // Мелодия 3 (космическая)
   const m3 = () => playNotes([110, 146.83, 220, 293.66], 2.0, 'sawtooth', 0.5);
-  // Мелодия 4 (электро)
   const m4 = () => playNotes([440, 554.37, 659.25, 880], 1.2, 'square', 0.2);
-  // Мелодия 5 (арфа)
   const m5 = () => playNotes([392, 493.88, 587.33, 698.46], 1.1, 'sine', 0.3);
-  // Мелодия 6 (бас)
   const m6 = () => playNotes([82.41, 110, 146.83, 196], 2.0, 'triangle', 0.6);
-  // Мелодия 7 (колокольчики)
   const m7 = () => playNotes([1046.5, 1318.5, 1568, 2093], 1.8, 'sine', 0.15);
-  // Мелодия 8 (тёмная)
   const m8 = () => playNotes([155.56, 207.65, 311.13, 415.30], 1.7, 'sawtooth', 0.4);
-  // Мелодия 9 (футуризм)
   const m9 = () => playNotes([330, 415, 523, 659], 1.4, 'square', 0.28);
-  // Мелодия 10 — ИНТЕРСТЕЛЛАР (легендарная тема)
   function playInterstellar() {
     const now = ac.currentTime;
-    // басовый остинато: A – C – D – E  (A minor)
     const bass = [110, 130.81, 146.83, 164.81]; 
     for (let i = 0; i < 8; i++) {
       const osc = ac.createOscillator();
       const gain = ac.createGain();
       osc.type = 'sine';
-      osc.frequency.value = bass[i % 4] * 0.5; // бас октавой ниже
+      osc.frequency.value = bass[i % 4] * 0.5;
       gain.gain.setValueAtTime(0.1, now + i * 1.2);
       gain.gain.exponentialRampToValueAtTime(0.001, now + i * 1.2 + 1.0);
       osc.connect(gain).connect(ac.destination);
       osc.start(now + i * 1.2);
       osc.stop(now + i * 1.2 + 1.2);
     }
-    // мелодия поверх (знаменитый мотив: A(high) G E D C D E ... упрощённо)
     const melody = [880, 783.99, 659.25, 587.33, 523.25, 587.33, 659.25]; 
     melody.forEach((f, j) => {
       const osc = ac.createOscillator();
@@ -491,22 +491,34 @@
     if (index !== 0) startMusic();
   }
 
-  // клик звук
+  // ----- новый приятный звук клика (две ноты) -----
   function clickSound() {
     const now = ac.currentTime;
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 740;
-    gain.gain.setValueAtTime(0.1, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-    osc.connect(gain).connect(ac.destination);
-    osc.start(now);
-    osc.stop(now + 0.1);
+    // основной тон
+    const osc1 = ac.createOscillator();
+    const gain1 = ac.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.value = 659.25; // ми
+    gain1.gain.setValueAtTime(0.1, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc1.connect(gain1).connect(ac.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.15);
+
+    // второй тон чуть позже
+    const osc2 = ac.createOscillator();
+    const gain2 = ac.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = 880; // ля
+    gain2.gain.setValueAtTime(0.07, now + 0.03);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc2.connect(gain2).connect(ac.destination);
+    osc2.start(now + 0.03);
+    osc2.stop(now + 0.18);
   }
 
   // --------------------------------------------------------------
-  // 5. Звёздный фон ПК (анимация)
+  // 4. Звёздный фон ПК (анимация)
   // --------------------------------------------------------------
   const canvasPc = document.getElementById('starsPc');
   if (canvasPc) {
@@ -538,7 +550,60 @@
   }
 
   // --------------------------------------------------------------
-  // 6. Рендер магазина (общий для ПК и мобил)
+  // 5. Звёзды для иллюминатора (мировые координаты)
+  // --------------------------------------------------------------
+  const illCanvas = document.getElementById('illuminator-stars-canvas');
+  const illCtx = illCanvas ? illCanvas.getContext('2d') : null;
+  let worldStars = [];
+  const WORLD_SIZE = 4000; // мир от -2000 до 2000
+
+  if (illCanvas) {
+    // инициализация звёзд в мировом пространстве
+    for (let i = 0; i < 2000; i++) {
+      worldStars.push({
+        x: (Math.random() - 0.5) * WORLD_SIZE,
+        y: (Math.random() - 0.5) * WORLD_SIZE,
+        speed: 0.1 + Math.random() * 0.3,
+        size: Math.random() * 1.5 + 0.5
+      });
+    }
+
+    // параметры трансформации (обновляются из touch-событий)
+    let scale = 1, translateX = 0, translateY = 0;
+
+    // функция перерисовки звёзд с учётом текущей трансформации
+    function drawIllStars() {
+      if (!illCtx || !illCanvas) return;
+      const w = illCanvas.width;
+      const h = illCanvas.height;
+      illCtx.clearRect(0, 0, w, h);
+      illCtx.fillStyle = 'white';
+
+      worldStars.forEach(star => {
+        // мировые координаты -> экранные
+        const screenX = translateX + star.x * scale;
+        const screenY = translateY + star.y * scale;
+        // проверка видимости (с небольшим запасом)
+        if (screenX > -10 && screenX < w + 10 && screenY > -10 && screenY < h + 10) {
+          illCtx.globalAlpha = 0.6 + Math.random() * 0.3;
+          illCtx.fillRect(screenX, screenY, star.size, star.size);
+        }
+        // медленное движение звёзд (для эффекта)
+        star.y += star.speed * 0.5;
+        if (star.y > WORLD_SIZE/2) star.y = -WORLD_SIZE/2;
+      });
+      requestAnimationFrame(drawIllStars);
+    }
+    drawIllStars();
+
+    // экспорт параметров для использования в touch-обработчиках
+    window.illuminatorTransform = {
+      set: (s, tx, ty) => { scale = s; translateX = tx; translateY = ty; }
+    };
+  }
+
+  // --------------------------------------------------------------
+  // 6. Рендер магазина
   // --------------------------------------------------------------
   function renderShop(container) {
     if (!container) return;
@@ -569,7 +634,7 @@
     });
   }
 
-  // Добавление предмета в мир (ПК фон или мобильный иллюминатор)
+  // Добавление предмета в мир
   function addItemToWorld(id, imgSrc) {
     if (isMobile) {
       const content = document.getElementById('illuminator-content');
@@ -578,7 +643,6 @@
       img.src = imgSrc;
       img.className = 'illuminator-item';
       img.dataset.id = id;
-      // начальная позиция (если нет сохранённой)
       let x = 50, y = 50;
       if (mobItemPos[id]) {
         x = mobItemPos[id].x;
@@ -614,7 +678,7 @@
     }
   }
 
-  // Перетаскивание на ПК
+  // Перетаскивание на ПК (мышь)
   function makeDraggableOnPc(el, id) {
     let dx, dy;
     el.onmousedown = (e) => {
@@ -630,70 +694,67 @@
     };
   }
 
-  // Перетаскивание внутри иллюминатора (с учётом масштаба/сдвига)
-  let currentScale = 1, currentX = 0, currentY = 0; // для трансформации
+  // Перетаскивание внутри иллюминатора (мышь + touch)
   function makeDraggableInIlluminator(el, id) {
     let startX, startY, startLeft, startTop;
     const content = document.getElementById('illuminator-content');
+
+    function dragStart(clientX, clientY) {
+      startLeft = parseFloat(el.style.left) || 0;
+      startTop = parseFloat(el.style.top) || 0;
+      startX = clientX;
+      startY = clientY;
+    }
+
+    function dragMove(clientX, clientY) {
+      const dx = (clientX - startX) / currentScale; // currentScale из трансформации
+      const dy = (clientY - startY) / currentScale;
+      let newX = startLeft + dx;
+      let newY = startTop + dy;
+      // границы
+      newX = Math.max(0, Math.min(content.clientWidth - el.clientWidth, newX));
+      newY = Math.max(0, Math.min(content.clientHeight - el.clientHeight, newY));
+      el.style.left = newX + 'px';
+      el.style.top = newY + 'px';
+      mobItemPos[id] = { x: newX, y: newY };
+    }
+
+    // мышь
     el.onmousedown = (e) => {
       e.preventDefault();
-      const transform = getComputedStyle(content).transform;
-      // упрощаем: во время перетаскивания отключаем зум-панораму (можно улучшить)
-      startLeft = parseFloat(el.style.left);
-      startTop = parseFloat(el.style.top);
-      startX = e.clientX;
-      startY = e.clientY;
-      document.onmousemove = (m) => {
-        const dx = (m.clientX - startX) / currentScale;
-        const dy = (m.clientY - startY) / currentScale;
-        let newX = startLeft + dx;
-        let newY = startTop + dy;
-        // ограничители
-        const container = content;
-        newX = Math.max(0, Math.min(container.clientWidth - el.clientWidth, newX));
-        newY = Math.max(0, Math.min(container.clientHeight - el.clientHeight, newY));
-        el.style.left = newX + 'px';
-        el.style.top = newY + 'px';
-        mobItemPos[id] = { x: newX, y: newY };
-      };
+      dragStart(e.clientX, e.clientY);
+      document.onmousemove = (m) => { dragMove(m.clientX, m.clientY); };
       document.onmouseup = () => { document.onmousemove = null; };
     };
+
+    // touch
+    el.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      dragStart(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    el.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      dragMove(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    el.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      // ничего не делаем
+    });
   }
 
   // --------------------------------------------------------------
-  // 7. ЗУМ/ПАН для иллюминатора (мобильный)
+  // 7. ЗУМ/ПАН для иллюминатора
   // --------------------------------------------------------------
   const viewport = document.getElementById('illuminator-viewport');
   const content = document.getElementById('illuminator-content');
-  const canvasIll = document.getElementById('illuminator-stars-canvas');
   if (viewport && content) {
     let scale = 1, translateX = 0, translateY = 0;
     let startDistance = 0, startScale = 1;
     let startPan = { x: 0, y: 0 };
-
-    // звёзды внутри иллюминатора
-    let illCtx = canvasIll.getContext('2d');
-    function resizeIllCanvas() {
-      canvasIll.width = viewport.clientWidth;
-      canvasIll.height = viewport.clientHeight;
-    }
-    resizeIllCanvas();
-    const illStars = [...Array(2000)].map(() => ({
-      x: Math.random() * 1000, y: Math.random() * 1000, s: Math.random() * 1.5
-    }));
-    function drawIllStars() {
-      if (!illCtx) return;
-      illCtx.clearRect(0, 0, canvasIll.width, canvasIll.height);
-      illCtx.fillStyle = '#fff';
-      illStars.forEach(s => {
-        illCtx.globalAlpha = 0.5 + Math.random() * 0.4;
-        illCtx.fillRect(s.x % canvasIll.width, s.y % canvasIll.height, s.s, s.s);
-        s.y += s.s * 0.1;
-        if (s.y > canvasIll.height) s.y = 0;
-      });
-      requestAnimationFrame(drawIllStars);
-    }
-    drawIllStars();
 
     viewport.addEventListener('touchstart', (e) => {
       e.preventDefault();
@@ -725,21 +786,45 @@
     });
 
     function applyTransform() {
-      currentScale = scale;
-      currentX = translateX;
-      currentY = translateY;
       content.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      // передаём параметры в звёздный канвас (глобальная переменная)
+      if (window.illuminatorTransform) {
+        window.illuminatorTransform.set(scale, translateX, translateY);
+      }
+      // также запоминаем для перетаскивания
+      window.currentScale = scale;
+      window.currentTranslateX = translateX;
+      window.currentTranslateY = translateY;
     }
+
+    // инициализация
+    window.currentScale = 1;
+    window.currentTranslateX = 0;
+    window.currentTranslateY = 0;
   }
 
   // --------------------------------------------------------------
-  // 8. Обработчики кликов, авто, кнопки
+  // 8. Всплывающее число при клике
+  // --------------------------------------------------------------
+  function showFloatingNumber(x, y, value) {
+    const div = document.createElement('div');
+    div.className = 'floating-number';
+    div.textContent = `+${value}`;
+    div.style.left = (x - 20) + 'px';
+    div.style.top = (y - 20) + 'px';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 1000);
+  }
+
+  // --------------------------------------------------------------
+  // 9. Обработчики кликов, авто, кнопки
   // --------------------------------------------------------------
   document.getElementById('click').onclick = (e) => {
     ac.resume();
     clickSound();
     score += power;
     updateStats();
+    showFloatingNumber(e.clientX, e.clientY, power);
   };
 
   document.getElementById('upgrade').onclick = () => {
@@ -765,7 +850,7 @@
     }
   }, 1000);
 
-  // сохранение / загрузка (упрощённо)
+  // сохранение / загрузка
   document.getElementById('saveBtn').onclick = () => {
     localStorage.setItem('clickerData', JSON.stringify({
       score, power, auto, upPrice, autoPrice, owned,
@@ -783,7 +868,7 @@
     updateStats();
     // перестроить предметы
     if (isMobile) {
-      document.getElementById('illuminator-content').innerHTML = '<canvas id="illuminator-stars-canvas"></canvas>';
+      document.getElementById('illuminator-content').innerHTML = ''; // канвас уже есть отдельно
     } else {
       document.getElementById('bgPcItems').innerHTML = '';
     }
@@ -796,7 +881,7 @@
       score=0; power=1; auto=0; upPrice=100; autoPrice=500; owned={}; pcItemPos={}; mobItemPos={};
       updateStats();
       if (isMobile) {
-        document.getElementById('illuminator-content').innerHTML = '<canvas id="illuminator-stars-canvas"></canvas>';
+        document.getElementById('illuminator-content').innerHTML = '';
       } else {
         document.getElementById('bgPcItems').innerHTML = '';
       }
@@ -806,7 +891,7 @@
   };
 
   // --------------------------------------------------------------
-  // 9. Музыкальные кнопки (генерируем 10 штук)
+  // 10. Музыкальные кнопки
   // --------------------------------------------------------------
   function createMusicButtons() {
     const containerPc = document.getElementById('musicDesktop');
@@ -814,7 +899,7 @@
     const labels = ['☀️ Мелодия 1','🌙 Мелодия 2','🌀 Мелодия 3','📡 Мелодия 4','🎹 Мелодия 5',
                     '🔮 Мелодия 6','⚡ Мелодия 7','🌌 Мелодия 8','🚀 Мелодия 9','🌟 ИНТЕРСТЕЛЛАР','🔇 Выкл.'];
     for (let i = 0; i <= 10; i++) {
-      const idx = i === 10 ? 0 : i+1; // последняя выкл
+      const idx = i === 10 ? 0 : i+1;
       const btnPc = document.createElement('button');
       btnPc.textContent = labels[i] || '🎵';
       btnPc.onclick = () => { ac.resume(); changeMelody(idx); };
@@ -829,7 +914,7 @@
   createMusicButtons();
 
   // --------------------------------------------------------------
-  // 10. Панели открыть/закрыть
+  // 11. Панели открыть/закрыть
   // --------------------------------------------------------------
   document.getElementById('toggleShopDesktop').onclick = () => {
     document.getElementById('shopDesktop').classList.toggle('open');
@@ -857,7 +942,17 @@
   renderShop(document.getElementById('shopDesktop'));
   renderShop(document.getElementById('shopMobile'));
 
-  // если уже есть owned при загрузке (например после load) - но пока пусто.
+  // небольшой хак: обновим размер канваса иллюминатора при ресайзе
+  window.addEventListener('resize', () => {
+    if (illCanvas) {
+      illCanvas.width = viewport.clientWidth;
+      illCanvas.height = viewport.clientHeight;
+    }
+  });
+  if (illCanvas && viewport) {
+    illCanvas.width = viewport.clientWidth;
+    illCanvas.height = viewport.clientHeight;
+  }
 })();
 </script>
 </body>
