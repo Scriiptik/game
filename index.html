@@ -1,465 +1,205 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Мемолента по годам 🎞️</title>
-    <!-- Библиотеки: шрифты, иконки, лёгкие анимации -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;1,400&family=Comic+Neue:wght@400;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<title>Advanced Clicker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
-            transition: background 0.3s ease;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+  color: white;
+}
 
-        /* адаптивный контейнер */
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            padding: 16px;
-            margin: 0 auto;
-        }
+.game {
+  width: 360px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 25px;
+  backdrop-filter: blur(10px);
+}
 
-        /* шапка с динамическим годом (для примера меняется редко) */
-        .header {
-            text-align: center;
-            padding: 20px 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 0 0 30px 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            width: 100%;
-        }
-        .header h1 {
-            font-size: clamp(1.8rem, 8vw, 3rem);
-            font-family: 'Comic Neue', cursive;
-            letter-spacing: 2px;
-        }
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
+h1 { margin-top: 0; }
 
-        /* сетка для карточек */
-        .meme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            justify-content: center;
-        }
+.score {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
 
-        /* базовая карточка мема */
-        .meme-card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            animation: fadeInUp 0.5s ease;
-            border: 4px solid transparent; /* будет меняться по году */
-        }
-        .meme-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-        }
+.click-btn {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  background: radial-gradient(circle,#00ffd5,#00b3a4);
+  box-shadow: 0 10px 30px rgba(0,255,213,0.5);
+  transition: transform 0.1s;
+}
+.click-btn:active { transform: scale(0.9); }
 
-        /* изображение / гифка */
-        .meme-media {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-            background: #ddd;
-            display: block;
-            border-bottom: 2px solid #eee;
-            cursor: pointer;
-        }
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  cursor: pointer;
+}
 
-        /* нижняя часть карточки */
-        .meme-info {
-            padding: 15px;
-            flex: 1;
-        }
-        .meme-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            line-height: 1.4;
-            max-height: 3.2em;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .meme-year {
-            display: inline-block;
-            background: #e0e0e0;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #333;
-        }
+.toggle {
+  margin-top: 15px;
+  background: rgba(0,0,0,0.3);
+}
 
-        /* ===== темы в зависимости от года мема ===== */
-        .meme-card.year-2024 {
-            border-color: #ff6b6b;
-            background: #fff5f5;
-        }
-        .meme-card.year-2024 .meme-title {
-            color: #c92a2a;
-            font-family: 'Comic Neue', cursive;
-        }
-        .meme-card.year-2023 {
-            border-color: #4ecdc4;
-            background: #f0fffe;
-        }
-        .meme-card.year-2023 .meme-title {
-            color: #1c7e7a;
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-        }
-        .meme-card.year-2022 {
-            border-color: #ffe66d;
-            background: #fff9e6;
-        }
-        .meme-card.year-2022 .meme-title {
-            color: #b25f00;
-            font-style: italic;
-        }
-        .meme-card.year-2021 {
-            border-color: #c77dff;
-            background: #f3e8ff;
-        }
-        .meme-card.year-2021 .meme-title {
-            color: #5a189a;
-            text-transform: uppercase;
-        }
-        .meme-card.year-2020 {
-            border-color: #f08c00;
-            background: #fff4e0;
-        }
-        .meme-card.year-2020 .meme-title {
-            color: #d9480f;
-            font-family: 'Courier New', monospace;
-        }
-        .meme-card.year-2019 {
-            border-color: #74c69d;
-            background: #e9f7ef;
-        }
-        .meme-card.year-2019 .meme-title {
-            color: #1e5f3e;
-            text-decoration: underline wavy;
-        }
-        .meme-card.year-old { /* до 2018 */
-            border-color: #adb5bd;
-            background: #e9ecef;
-            filter: sepia(0.3);
-        }
-        .meme-card.year-old .meme-title {
-            color: #495057;
-            font-family: 'Times New Roman', serif;
-        }
+.shop {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s ease;
+}
 
-        /* загрузчик и конец ленты */
-        .loader {
-            text-align: center;
-            padding: 30px 10px;
-            font-size: 1.4rem;
-            color: #666;
-        }
-        .loader i {
-            margin-right: 8px;
-        }
-        .end-message {
-            text-align: center;
-            padding: 30px;
-            color: #888;
-            font-size: 1.2rem;
-        }
+.shop.open {
+  max-height: 600px;
+}
 
-        /* кнопка "наверх" (mobile friendly) */
-        #scrollTopBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #764ba2;
-            color: white;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 999;
-            transition: background 0.2s;
-        }
-        #scrollTopBtn:hover {
-            background: #5a3d7a;
-        }
-        @media (max-width: 600px) {
-            .meme-grid {
-                grid-template-columns: 1fr;
-            }
-            #scrollTopBtn {
-                width: 45px;
-                height: 45px;
-                font-size: 1.2rem;
-                bottom: 15px;
-                right: 15px;
-            }
-        }
-    </style>
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.item img {
+  width: 40px;
+  height: 40px;
+}
+
+.particle {
+  position: absolute;
+  color: #00ffd5;
+  animation: float 1s forwards;
+  pointer-events: none;
+}
+
+@keyframes float {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-60px); }
+}
+</style>
 </head>
+
 <body>
-    <header class="header animate__animated animate__fadeInDown">
-        <h1><i class="fas fa-robot"></i> Мемолента <i class="fas fa-laugh-squint"></i></h1>
-        <p>Скролль вниз — мемы подгружаются сами. Каждый год — свой стиль!</p>
-    </header>
+<div class="game">
+  <h1>⚡ Advanced Clicker</h1>
+  <div class="score">Очки: <span id="score">0</span></div>
+  <div>Сила клика: ×<span id="power">1</span></div>
 
-    <div class="container">
-        <div id="memeContainer" class="meme-grid">
-            <!-- карточки будут добавляться сюда -->
-        </div>
-        <div id="loader" class="loader">
-            <i class="fas fa-spinner fa-pulse"></i> Загружаем мемные архивы...
-        </div>
-        <div id="endMessage" class="end-message" style="display: none;">
-            <i class="fas fa-hourglass-end"></i> Вы доскроллили до дна мемохранилища (но это не точно)
-        </div>
-    </div>
+  <button class="click-btn" id="click">КЛИК</button>
 
-    <button id="scrollTopBtn" title="Наверх"><i class="fas fa-arrow-up"></i></button>
+  <button id="upgrade">
+    🔥 Усилить клик ×2<br>
+    Цена: <span id="upgradePrice">20</span>
+  </button>
 
-    <!-- Подключаем axios -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        (function() {
-            const container = document.getElementById('memeContainer');
-            const loader = document.getElementById('loader');
-            const endMessage = document.getElementById('endMessage');
-            const scrollBtn = document.getElementById('scrollTopBtn');
+  <button class="toggle" id="toggleShop">🛒 Магазин предметов</button>
 
-            let after = null;          // токен пагинации Reddit
-            let loading = false;
-            let hasMore = true;
-            const subreddits = ['memes', 'dankmemes', 'wholesomememes', 'AdviceAnimals', 'MemeEconomy'];
+  <div class="shop" id="shop"></div>
+</div>
 
-            // Прокси-сервер для обхода CORS (allorigins.win отдаёт данные с правильными заголовками)
-            const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+<script>
+let score = Number(localStorage.getItem("score")) || 0;
+let power = Number(localStorage.getItem("power")) || 1;
+let upgradePrice = Number(localStorage.getItem("upgradePrice")) || 20;
+let owned = JSON.parse(localStorage.getItem("owned")) || {};
 
-            // --- Функция определения года и класса ---
-            function getYearClass(timestamp) {
-                const date = new Date(timestamp * 1000);
-                const year = date.getFullYear();
-                if (year >= 2024) return 'year-2024';
-                if (year === 2023) return 'year-2023';
-                if (year === 2022) return 'year-2022';
-                if (year === 2021) return 'year-2021';
-                if (year === 2020) return 'year-2020';
-                if (year === 2019) return 'year-2019';
-                return 'year-old'; // 2018 и ранее
-            }
+const items = [
+  {id:"cat", name:"Котик", price:50, img:"https://cdn-icons-png.flaticon.com/512/616/616408.png"},
+  {id:"phone", name:"Смартфон", price:120, img:"https://cdn-icons-png.flaticon.com/512/888/888879.png"},
+  {id:"laptop", name:"Ноутбук", price:300, img:"https://cdn-icons-png.flaticon.com/512/3474/3474362.png"},
+  {id:"robot", name:"Робот", price:600, img:"https://cdn-icons-png.flaticon.com/512/4712/4712109.png"},
+  {id:"neon", name:"Неон-гаджет", price:1200, img:"https://cdn-icons-png.flaticon.com/512/1048/1048953.png"}
+];
 
-            // --- Проверка, является ли URL изображением/гифкой ---
-            function isImageOrGif(url) {
-                if (!url) return false;
-                const ext = url.split('?')[0].toLowerCase();
-                return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png') || ext.endsWith('.gif');
-            }
+const scoreEl = document.getElementById("score");
+const powerEl = document.getElementById("power");
+const upgradeEl = document.getElementById("upgradePrice");
+const shopEl = document.getElementById("shop");
 
-            // --- Получение чистого URL медиа из поста Reddit ---
-            function getMediaUrl(post) {
-                if (post.preview && post.preview.images && post.preview.images[0]) {
-                    const source = post.preview.images[0].source;
-                    if (source && source.url) {
-                        return source.url.replace(/&amp;/g, '&');
-                    }
-                }
-                if (post.url && isImageOrGif(post.url)) {
-                    return post.url;
-                }
-                if (post.media && post.media.reddit_video) {
-                    if (post.preview && post.preview.images && post.preview.images[0]) {
-                        return post.preview.images[0].source.url.replace(/&amp;/g, '&');
-                    }
-                }
-                if (post.secure_media && post.secure_media.reddit_video) {
-                    if (post.preview && post.preview.images) {
-                        return post.preview.images[0].source.url.replace(/&amp;/g, '&');
-                    }
-                }
-                return null;
-            }
+function update() {
+  scoreEl.textContent = score;
+  powerEl.textContent = power;
+  upgradeEl.textContent = upgradePrice;
+  localStorage.setItem("score", score);
+  localStorage.setItem("power", power);
+  localStorage.setItem("upgradePrice", upgradePrice);
+  localStorage.setItem("owned", JSON.stringify(owned));
+}
 
-            // --- Основная функция загрузки мемов через прокси ---
-            async function fetchMemes() {
-                if (loading || !hasMore) return;
+document.getElementById("click").onclick = (e) => {
+  score += power;
+  spawn(e.clientX,e.clientY,"+"+power);
+  update();
+};
 
-                loading = true;
-                loader.style.display = 'block';
-                endMessage.style.display = 'none';
+document.getElementById("upgrade").onclick = () => {
+  if(score >= upgradePrice){
+    score -= upgradePrice;
+    power *= 2;
+    upgradePrice = Math.floor(upgradePrice * 2.5);
+    update();
+  }
+};
 
-                try {
-                    const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
-                    let redditUrl = `https://www.reddit.com/r/${sub}.json?limit=12`;
-                    if (after) {
-                        redditUrl += `&after=${after}`;
-                    }
+document.getElementById("toggleShop").onclick = () => {
+  shopEl.classList.toggle("open");
+};
 
-                    const proxyUrl = CORS_PROXY + encodeURIComponent(redditUrl);
-                    const response = await axios.get(proxyUrl);
+function renderShop(){
+  shopEl.innerHTML = "";
+  items.forEach(i=>{
+    const div = document.createElement("div");
+    div.className="item";
+    div.innerHTML = `
+      <img src="${i.img}">
+      <div>${i.name}<br>${owned[i.id]?"Куплено":"Цена: "+i.price}</div>
+      <button ${owned[i.id]?"disabled":""}>Купить</button>
+    `;
+    div.querySelector("button").onclick=()=>{
+      if(score>=i.price){
+        score-=i.price;
+        owned[i.id]=true;
+        update();
+        renderShop();
+      }
+    };
+    shopEl.appendChild(div);
+  });
+}
 
-                    // allorigins.win возвращает тело ответа как строку в response.data
-                    let data;
-                    try {
-                        data = JSON.parse(response.data);
-                    } catch (e) {
-                        console.error('Не удалось распарсить JSON:', e);
-                        throw new Error('Ошибка парсинга ответа от прокси');
-                    }
+function spawn(x,y,t){
+  const p=document.createElement("div");
+  p.className="particle";
+  p.textContent=t;
+  p.style.left=x+"px";
+  p.style.top=y+"px";
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),1000);
+}
 
-                    const posts = data.data.children;
-                    if (!posts || posts.length === 0) {
-                        hasMore = false;
-                        loader.style.display = 'none';
-                        endMessage.style.display = 'block';
-                        return;
-                    }
-
-                    after = data.data.after;
-                    if (!after) hasMore = false;
-
-                    // Фильтруем посты с медиа
-                    const validPosts = posts.filter(child => {
-                        const post = child.data;
-                        if (post.stickied) return false;
-                        if (post.over_18) return false;
-                        const mediaUrl = getMediaUrl(post);
-                        return mediaUrl && isImageOrGif(mediaUrl);
-                    });
-
-                    if (validPosts.length === 0) {
-                        // Если в этой пачке нет картинок, пробуем ещё раз (рекурсивно, осторожно)
-                        if (hasMore) {
-                            loading = false;
-                            fetchMemes();
-                            return;
-                        }
-                    }
-
-                    validPosts.forEach(child => {
-                        const post = child.data;
-                        const title = post.title || 'Мем без названия';
-                        const yearClass = getYearClass(post.created_utc);
-                        const mediaUrl = getMediaUrl(post);
-                        if (!mediaUrl) return;
-
-                        const card = document.createElement('div');
-                        card.className = `meme-card ${yearClass} animate__animated animate__fadeInUp`;
-                        card.setAttribute('data-year', yearClass);
-
-                        const mediaElement = document.createElement('img');
-                        mediaElement.src = mediaUrl.includes('.gifv') ? mediaUrl.replace('.gifv', '.gif') : mediaUrl;
-                        mediaElement.alt = title;
-                        mediaElement.loading = 'lazy';
-                        mediaElement.classList.add('meme-media');
-
-                        mediaElement.onerror = () => {
-                            mediaElement.src = 'https://via.placeholder.com/300x300?text=Мем+не+загрузился:+(';
-                        };
-
-                        const infoDiv = document.createElement('div');
-                        infoDiv.className = 'meme-info';
-
-                        const titleDiv = document.createElement('div');
-                        titleDiv.className = 'meme-title';
-                        titleDiv.textContent = title.length > 70 ? title.slice(0, 70) + '…' : title;
-
-                        const yearSpan = document.createElement('span');
-                        yearSpan.className = 'meme-year';
-                        const year = new Date(post.created_utc * 1000).getFullYear();
-                        yearSpan.textContent = year + ' г.';
-
-                        infoDiv.appendChild(titleDiv);
-                        infoDiv.appendChild(yearSpan);
-
-                        card.appendChild(mediaElement);
-                        card.appendChild(infoDiv);
-
-                        container.appendChild(card);
-                    });
-
-                } catch (error) {
-                    console.error('Ошибка загрузки мемов:', error);
-                    const errorDiv = document.createElement('div');
-                    errorDiv.style.gridColumn = '1 / -1';
-                    errorDiv.style.padding = '20px';
-                    errorDiv.style.background = '#ffdddd';
-                    errorDiv.style.borderRadius = '12px';
-                    errorDiv.textContent = '😿 Не удалось загрузить мемы. Попробуй позже.';
-                    container.appendChild(errorDiv);
-                } finally {
-                    loading = false;
-                    loader.style.display = 'none';
-                    if (!hasMore) {
-                        endMessage.style.display = 'block';
-                    } else {
-                        endMessage.style.display = 'none';
-                    }
-                }
-            }
-
-            // --- Бесконечный скролл ---
-            function handleScroll() {
-                const scrollY = window.scrollY;
-                const windowHeight = window.innerHeight;
-                const documentHeight = document.documentElement.scrollHeight;
-
-                if (scrollY + windowHeight >= documentHeight - 400) {
-                    fetchMemes();
-                }
-
-                if (scrollY > 300) {
-                    scrollBtn.style.display = 'block';
-                } else {
-                    scrollBtn.style.display = 'none';
-                }
-            }
-
-            window.addEventListener('scroll', () => {
-                requestAnimationFrame(handleScroll);
-            });
-
-            scrollBtn.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-
-            // Стартовая загрузка
-            fetchMemes();
-
-            // Если контента мало, подгрузим ещё
-            setTimeout(() => {
-                if (document.documentElement.scrollHeight <= window.innerHeight) {
-                    fetchMemes();
-                }
-            }, 800);
-        })();
-    </script>
+renderShop();
+update();
+</script>
 </body>
 </html>
