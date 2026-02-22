@@ -6,55 +6,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* ===== ФОН СО ЗВЕЗДАМИ ===== */
+/* ===== ЗВЁЗДНЫЙ ФОН ===== */
 body{
   margin:0;
-  min-height:100vh;
+  height:100vh;
   background:#050b14;
   overflow:hidden;
   font-family:system-ui,sans-serif;
   color:white;
 }
 
-.stars, .stars2{
+.starfield{
   position:fixed;
   inset:0;
-  background-repeat:repeat;
-  background-size:contain;
-  animation:moveStars 120s linear infinite;
-  z-index:0;
+  background:
+    radial-gradient(1px 1px at 10% 20%,#fff,transparent),
+    radial-gradient(1px 1px at 30% 80%,#fff,transparent),
+    radial-gradient(2px 2px at 50% 40%,#fff,transparent),
+    radial-gradient(1.5px 1.5px at 70% 60%,#fff,transparent),
+    radial-gradient(1px 1px at 90% 10%,#fff,transparent);
+  animation:stars 120s linear infinite;
+  opacity:.8;
 }
-.stars{
-  background-image:
-   radial-gradient(2px 2px at 20px 30px,#fff,transparent),
-   radial-gradient(1px 1px at 100px 80px,#fff,transparent),
-   radial-gradient(1.5px 1.5px at 200px 150px,#fff,transparent);
-}
-.stars2{
-  animation-duration:200s;
+.starfield::after{
+  content:"";
+  position:absolute;
+  inset:-2000px;
+  background:inherit;
+  animation:stars 240s linear infinite reverse;
   opacity:.4;
 }
 
-@keyframes moveStars{
+@keyframes stars{
   from{transform:translateY(0)}
-  to{transform:translateY(-2000px)}
+  to{transform:translateY(2000px)}
 }
 
 /* ===== ПАНЕЛИ ===== */
 .glass{
-  background:rgba(255,255,255,0.08);
+  background:rgba(255,255,255,.08);
   backdrop-filter:blur(12px);
   border:1px solid rgba(255,255,255,.15);
-  box-shadow:0 20px 50px rgba(0,0,0,.4);
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+  border-radius:20px;
 }
 
 /* ===== ИГРА ===== */
 .game{
   position:relative;
-  z-index:2;
+  z-index:3;
   width:360px;
   padding:20px;
-  border-radius:20px;
   margin:auto;
 }
 
@@ -63,10 +65,10 @@ body{
   border-radius:50%;
   border:none;
   background:radial-gradient(circle,#00ffd5,#00b3a4);
-  box-shadow:0 0 30px rgba(0,255,213,.6);
+  box-shadow:0 0 35px rgba(0,255,213,.7);
   font-size:22px;
   cursor:pointer;
-  transition:transform .1s;
+  transition:.1s;
 }
 .click-btn:active{transform:scale(.9)}
 
@@ -86,47 +88,41 @@ button{
   position:absolute;
   top:15px;
   left:15px;
-  z-index:3;
+  z-index:4;
 }
 .shop{
   margin-top:6px;
   max-height:0;
   overflow:auto;
   transition:.4s;
-  width:230px;
-  border-radius:14px;
+  width:240px;
 }
 .shop.open{max-height:420px}
 
 .item{
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  gap:8px;
   padding:8px;
   border-bottom:1px solid rgba(255,255,255,.1);
 }
-.item img{width:34px}
+.item img{width:36px}
 
 /* ===== ПРЕДМЕТЫ НА ФОНЕ ===== */
 .bg-items{
   position:absolute;
   inset:0;
-  z-index:1;
+  z-index:2;
 }
 .bg-item{
   position:absolute;
   width:60px;
   cursor:grab;
-  animation:float 6s ease-in-out infinite, spin 20s linear infinite;
-  opacity:.9;
+  animation:float 6s ease-in-out infinite, spin 25s linear infinite;
 }
-.bg-item:active{
-  animation-play-state:paused;
-}
-
 @keyframes float{
   0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-6px)}
+  50%{transform:translateY(-8px)}
 }
 @keyframes spin{
   from{rotate:0deg}
@@ -141,16 +137,14 @@ button{
   pointer-events:none;
 }
 @keyframes particle{
-  to{opacity:0;transform:translateY(-50px)}
+  to{opacity:0;transform:translateY(-60px)}
 }
 </style>
 </head>
 
 <body>
 
-<div class="stars"></div>
-<div class="stars stars2"></div>
-
+<div class="starfield"></div>
 <div class="bg-items" id="bg"></div>
 
 <div class="shop-panel glass">
@@ -162,33 +156,36 @@ button{
 <h2>⚡ Advanced Clicker</h2>
 <div>Очки: <span id="score">0</span></div>
 <div>Сила клика: ×<span id="power">1</span></div>
-<div>Автоклик/сек: <span id="auto">0</span></div>
+<div>Автокликер ур.: <span id="autoLvl">0</span></div>
 
 <button class="click-btn" id="click">КЛИК</button>
-<button id="upgrade">🔥 Усилить ×2 (<span id="upPrice">50</span>)</button>
-<button id="autoUp">🤖 Автоклик (<span id="autoPrice">200</span>)</button>
+<button id="upgrade">🔥 Усилить ×2 (<span id="upPrice">100</span>)</button>
+<button id="autoUp">🤖 Улучшить автоклик (<span id="autoPrice">500</span>)</button>
 </div>
 
 <script>
 let score=+localStorage.score||0;
 let power=+localStorage.power||1;
-let upPrice=+localStorage.upPrice||50;
-let auto=+localStorage.auto||0;
-let autoPrice=+localStorage.autoPrice||200;
+let upPrice=+localStorage.upPrice||100;
+let autoLvl=+localStorage.autoLvl||0;
+let autoPrice=+localStorage.autoPrice||500;
 let owned=JSON.parse(localStorage.owned||"{}");
 let pos=JSON.parse(localStorage.pos||"{}");
 
-const items=[...Array(20)].map((_,i)=>({
- id:"item"+i,
- price:Math.floor(800*Math.pow(1.7,i)),
- img:"https://cdn-icons-png.flaticon.com/512/616/616408.png"
-}));
+const items=[
+{id:"cat",name:"Кот",img:"https://cdn-icons-png.flaticon.com/512/616/616408.png"},
+{id:"phone",name:"Телефон",img:"https://cdn-icons-png.flaticon.com/512/888/888879.png"},
+{id:"laptop",name:"Ноутбук",img:"https://cdn-icons-png.flaticon.com/512/3474/3474362.png"},
+{id:"robot",name:"Робот",img:"https://cdn-icons-png.flaticon.com/512/4712/4712109.png"},
+{id:"drone",name:"Дрон",img:"https://cdn-icons-png.flaticon.com/512/808/808439.png"},
+{id:"console",name:"Консоль",img:"https://cdn-icons-png.flaticon.com/512/2972/2972215.png"}
+].map((i,n)=>({...i,price:Math.floor(1000*Math.pow(1.8,n))}));
 
 const bg=document.getElementById("bg");
 const shop=document.getElementById("shop");
 
 function save(){
-Object.assign(localStorage,{score,power,upPrice,auto,autoPrice,
+Object.assign(localStorage,{score,power,upPrice,autoLvl,autoPrice,
  owned:JSON.stringify(owned),pos:JSON.stringify(pos)});
 }
 
@@ -200,16 +197,18 @@ update();
 
 document.getElementById("upgrade").onclick=()=>{
 if(score>=upPrice){
-score-=upPrice;power*=2;
-upPrice=Math.floor(upPrice*2.7);
+score-=upPrice;
+power*=2;
+upPrice=Math.floor(upPrice*2.8);
 update();
 }
 };
 
 document.getElementById("autoUp").onclick=()=>{
 if(score>=autoPrice){
-score-=autoPrice;auto++;
-autoPrice=Math.floor(autoPrice*2.5);
+score-=autoPrice;
+autoLvl++;
+autoPrice=Math.floor(autoPrice*2.6);
 update();
 }
 };
@@ -221,8 +220,9 @@ shop.innerHTML="";
 items.forEach(i=>{
 const d=document.createElement("div");
 d.className="item";
-d.innerHTML=`<img src="${i.img}">
-<div>${i.id}<br>${owned[i.id]?"Куплено":"💰"+i.price}</div>
+d.innerHTML=`
+<img src="${i.img}">
+<div>${i.name}<br>${owned[i.id]?"Куплено":"💰"+i.price}</div>
 <button ${owned[i.id]?"disabled":""}>Купить</button>`;
 d.querySelector("button").onclick=()=>{
 if(score>=i.price){
@@ -268,18 +268,19 @@ document.body.appendChild(p);
 setTimeout(()=>p.remove(),900);
 }
 
-setInterval(()=>{score+=auto;update();},1000);
+setInterval(()=>{
+if(autoLvl>0){
+score+=power*autoLvl;
+update();
+}
+},1000);
 
 function update(){
-scoreEl.textContent=score;
-powerEl.textContent=power;
-autoEl.textContent=auto;
+document.getElementById("score").textContent=score;
+document.getElementById("power").textContent=power;
+document.getElementById("autoLvl").textContent=autoLvl;
 save();
 }
-
-const scoreEl=document.getElementById("score");
-const powerEl=document.getElementById("power");
-const autoEl=document.getElementById("auto");
 
 Object.keys(owned).forEach(id=>addBg(id,owned[id]));
 renderShop();update();
