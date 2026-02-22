@@ -6,109 +6,91 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* ===== ЗВЁЗДНЫЙ ФОН ===== */
-body{
+html,body{
   margin:0;
-  height:100vh;
-  background:#050b14;
+  height:100%;
   overflow:hidden;
   font-family:system-ui,sans-serif;
+  background:#050b14;
   color:white;
 }
 
-.starfield{
+/* ===== ЗВЁЗДЫ ===== */
+#stars{
   position:fixed;
   inset:0;
-  background:
-    radial-gradient(1px 1px at 10% 20%,#fff,transparent),
-    radial-gradient(1px 1px at 30% 80%,#fff,transparent),
-    radial-gradient(2px 2px at 50% 40%,#fff,transparent),
-    radial-gradient(1.5px 1.5px at 70% 60%,#fff,transparent),
-    radial-gradient(1px 1px at 90% 10%,#fff,transparent);
-  animation:stars 120s linear infinite;
-  opacity:.8;
-}
-.starfield::after{
-  content:"";
-  position:absolute;
-  inset:-2000px;
-  background:inherit;
-  animation:stars 240s linear infinite reverse;
-  opacity:.4;
+  z-index:0;
 }
 
-@keyframes stars{
-  from{transform:translateY(0)}
-  to{transform:translateY(2000px)}
-}
-
-/* ===== ПАНЕЛИ ===== */
+/* ===== UI ===== */
 .glass{
   background:rgba(255,255,255,.08);
-  backdrop-filter:blur(12px);
+  backdrop-filter:blur(14px);
   border:1px solid rgba(255,255,255,.15);
   box-shadow:0 20px 50px rgba(0,0,0,.45);
   border-radius:20px;
 }
 
-/* ===== ИГРА ===== */
 .game{
-  position:relative;
-  z-index:3;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
   width:360px;
   padding:20px;
-  margin:auto;
+  z-index:3;
 }
 
-.click-btn{
-  width:160px;height:160px;
-  border-radius:50%;
-  border:none;
-  background:radial-gradient(circle,#00ffd5,#00b3a4);
-  box-shadow:0 0 35px rgba(0,255,213,.7);
-  font-size:22px;
-  cursor:pointer;
-  transition:.1s;
-}
-.click-btn:active{transform:scale(.9)}
-
-button{
-  width:100%;
-  margin-top:8px;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  background:rgba(255,255,255,.15);
-  color:white;
-  cursor:pointer;
-}
-
-/* ===== МАГАЗИН ===== */
 .shop-panel{
   position:absolute;
   top:15px;
   left:15px;
   z-index:4;
 }
+
 .shop{
-  margin-top:6px;
+  margin-top:8px;
   max-height:0;
   overflow:auto;
   transition:.4s;
-  width:240px;
+  width:260px;
 }
-.shop.open{max-height:420px}
+.shop.open{max-height:500px}
 
 .item{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
   padding:8px;
   border-bottom:1px solid rgba(255,255,255,.1);
 }
 .item img{width:36px}
 
-/* ===== ПРЕДМЕТЫ НА ФОНЕ ===== */
+button{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:12px;
+  background:rgba(255,255,255,.15);
+  color:white;
+  cursor:pointer;
+  transition:.1s;
+}
+button:active{
+  transform:scale(.94);
+  box-shadow:0 0 15px rgba(0,255,213,.8);
+}
+
+.click-btn{
+  width:160px;height:160px;
+  border-radius:50%;
+  background:radial-gradient(circle,#00ffd5,#00b3a4);
+  box-shadow:0 0 40px rgba(0,255,213,.7);
+  font-size:22px;
+}
+
+/* ===== ФОН-ПРЕДМЕТЫ ===== */
 .bg-items{
   position:absolute;
   inset:0;
@@ -117,12 +99,12 @@ button{
 .bg-item{
   position:absolute;
   width:60px;
+  animation:float 6s ease-in-out infinite, spin 30s linear infinite;
   cursor:grab;
-  animation:float 6s ease-in-out infinite, spin 25s linear infinite;
 }
 @keyframes float{
   0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-8px)}
+  50%{transform:translateY(-10px)}
 }
 @keyframes spin{
   from{rotate:0deg}
@@ -133,10 +115,10 @@ button{
 .particle{
   position:absolute;
   color:#00ffd5;
-  animation:particle 1s forwards;
   pointer-events:none;
+  animation:part 1s forwards;
 }
-@keyframes particle{
+@keyframes part{
   to{opacity:0;transform:translateY(-60px)}
 }
 </style>
@@ -144,7 +126,7 @@ button{
 
 <body>
 
-<div class="starfield"></div>
+<canvas id="stars"></canvas>
 <div class="bg-items" id="bg"></div>
 
 <div class="shop-panel glass">
@@ -153,76 +135,114 @@ button{
 </div>
 
 <div class="game glass">
-<h2>⚡ Advanced Clicker</h2>
-<div>Очки: <span id="score">0</span></div>
-<div>Сила клика: ×<span id="power">1</span></div>
-<div>Автокликер ур.: <span id="autoLvl">0</span></div>
+  <h2>⚡ Advanced Clicker</h2>
+  <div>Очки: <span id="score">0</span></div>
+  <div>Сила клика: ×<span id="power">1</span></div>
+  <div>Автокликер: <span id="auto">0</span></div>
 
-<button class="click-btn" id="click">КЛИК</button>
-<button id="upgrade">🔥 Усилить ×2 (<span id="upPrice">100</span>)</button>
-<button id="autoUp">🤖 Улучшить автоклик (<span id="autoPrice">500</span>)</button>
+  <button class="click-btn" id="click">КЛИК</button>
+  <button id="upgrade">🔥 Усилить ×2 (<span id="upPrice">100</span>)</button>
+  <button id="autoUp">🤖 Автоклик (<span id="autoPrice">500</span>)</button>
 </div>
 
 <script>
+/* ===== ЗВЁЗДЫ ===== */
+const c=document.getElementById("stars"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize();onresize=resize;
+const stars=[...Array(15000)].map(()=>({
+x:Math.random()*c.width,
+y:Math.random()*c.height,
+s:Math.random()*1.5
+}));
+function draw(){
+ctx.clearRect(0,0,c.width,c.height);
+ctx.fillStyle="white";
+stars.forEach(st=>{
+ctx.globalAlpha=Math.random();
+ctx.fillRect(st.x,st.y,st.s,st.s);
+st.y+=st.s*.3;
+if(st.y>c.height)st.y=0;
+});
+requestAnimationFrame(draw);
+}
+draw();
+
+/* ===== ЗВУКИ (Web Audio) ===== */
+const ac=new AudioContext();
+function clickSound(){
+const o=ac.createOscillator(),g=ac.createGain();
+o.type="sine";o.frequency.value=800;
+g.gain.value=.05;
+o.connect(g).connect(ac.destination);
+o.start();o.stop(ac.currentTime+.08);
+}
+function music(){
+const o=ac.createOscillator(),g=ac.createGain();
+o.type="triangle";o.frequency.value=120;
+g.gain.value=.02;
+o.connect(g).connect(ac.destination);
+o.start();
+}
+music();
+
+/* ===== ИГРА ===== */
 let score=+localStorage.score||0;
 let power=+localStorage.power||1;
+let auto=+localStorage.auto||0;
 let upPrice=+localStorage.upPrice||100;
-let autoLvl=+localStorage.autoLvl||0;
 let autoPrice=+localStorage.autoPrice||500;
 let owned=JSON.parse(localStorage.owned||"{}");
 let pos=JSON.parse(localStorage.pos||"{}");
 
-const items=[
-{id:"cat",name:"Кот",img:"https://cdn-icons-png.flaticon.com/512/616/616408.png"},
-{id:"phone",name:"Телефон",img:"https://cdn-icons-png.flaticon.com/512/888/888879.png"},
-{id:"laptop",name:"Ноутбук",img:"https://cdn-icons-png.flaticon.com/512/3474/3474362.png"},
-{id:"robot",name:"Робот",img:"https://cdn-icons-png.flaticon.com/512/4712/4712109.png"},
-{id:"drone",name:"Дрон",img:"https://cdn-icons-png.flaticon.com/512/808/808439.png"},
-{id:"console",name:"Консоль",img:"https://cdn-icons-png.flaticon.com/512/2972/2972215.png"}
-].map((i,n)=>({...i,price:Math.floor(1000*Math.pow(1.8,n))}));
+const items=[...Array(50)].map((_,i)=>({
+id:"item"+i,
+price:Math.floor(800*Math.pow(1.25,i)),
+img:`https://picsum.photos/seed/${i}/64`
+}));
 
 const bg=document.getElementById("bg");
 const shop=document.getElementById("shop");
 
 function save(){
-Object.assign(localStorage,{score,power,upPrice,autoLvl,autoPrice,
- owned:JSON.stringify(owned),pos:JSON.stringify(pos)});
+Object.assign(localStorage,{score,power,auto,upPrice,autoPrice,
+owned:JSON.stringify(owned),pos:JSON.stringify(pos)});
 }
 
-document.getElementById("click").onclick=e=>{
+click.onclick=e=>{
+ac.resume();clickSound();
 score+=power;
 spawn(e.clientX,e.clientY,"+"+power);
 update();
 };
 
-document.getElementById("upgrade").onclick=()=>{
+upgrade.onclick=()=>{
 if(score>=upPrice){
 score-=upPrice;
 power*=2;
-upPrice=Math.floor(upPrice*2.8);
+upPrice=Math.floor(upPrice*2.6);
 update();
 }
 };
 
-document.getElementById("autoUp").onclick=()=>{
+autoUp.onclick=()=>{
 if(score>=autoPrice){
 score-=autoPrice;
-autoLvl++;
-autoPrice=Math.floor(autoPrice*2.6);
+auto++;
+autoPrice=Math.floor(autoPrice*2.4);
 update();
 }
 };
 
-document.getElementById("toggleShop").onclick=()=>shop.classList.toggle("open");
+toggleShop.onclick=()=>shop.classList.toggle("open");
 
 function renderShop(){
 shop.innerHTML="";
 items.forEach(i=>{
 const d=document.createElement("div");
 d.className="item";
-d.innerHTML=`
-<img src="${i.img}">
-<div>${i.name}<br>${owned[i.id]?"Куплено":"💰"+i.price}</div>
+d.innerHTML=`<img src="${i.img}">
+<div>${i.id}<br>${owned[i.id]?"Куплено":"💰"+i.price}</div>
 <button ${owned[i.id]?"disabled":""}>Купить</button>`;
 d.querySelector("button").onclick=()=>{
 if(score>=i.price){
@@ -237,12 +257,10 @@ shop.appendChild(d);
 
 function addBg(id,img){
 const el=document.createElement("img");
-el.src=img;
-el.className="bg-item";
-el.style.left=(pos[id]?.x||Math.random()*300)+"px";
-el.style.top=(pos[id]?.y||Math.random()*400)+"px";
-drag(el,id);
-bg.appendChild(el);
+el.src=img;el.className="bg-item";
+el.style.left=(pos[id]?.x||Math.random()*innerWidth)+"px";
+el.style.top=(pos[id]?.y||Math.random()*innerHeight)+"px";
+drag(el,id);bg.appendChild(el);
 }
 
 function drag(el,id){
@@ -262,25 +280,23 @@ function spawn(x,y,t){
 const p=document.createElement("div");
 p.className="particle";
 p.textContent=t;
-p.style.left=x+"px";
-p.style.top=y+"px";
+p.style.left=x+"px";p.style.top=y+"px";
 document.body.appendChild(p);
 setTimeout(()=>p.remove(),900);
 }
 
-setInterval(()=>{
-if(autoLvl>0){
-score+=power*autoLvl;
-update();
-}
-},1000);
+setInterval(()=>{if(auto>0){score+=power*auto;update()}},1000);
 
 function update(){
-document.getElementById("score").textContent=score;
-document.getElementById("power").textContent=power;
-document.getElementById("autoLvl").textContent=autoLvl;
+scoreEl.textContent=score;
+powerEl.textContent=power;
+autoEl.textContent=auto;
 save();
 }
+
+const scoreEl=scoreSpan=score=document.getElementById("score");
+const powerEl=document.getElementById("power");
+const autoEl=document.getElementById("auto");
 
 Object.keys(owned).forEach(id=>addBg(id,owned[id]));
 renderShop();update();
