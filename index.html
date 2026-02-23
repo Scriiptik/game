@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>🌟 Astro Clicker · космические предметы</title>
+  <title>🌟 Astro Clicker · звёздные предметы</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -393,80 +393,37 @@
   updateStats();
 
   // --------------------------------------------------------------
-  // 2. Генерация предметов (50 штук) с реальными космическими снимками (NASA/Hubble)
+  // 2. Генерация предметов (50 штук) с надёжными иконками (SVG dataURI)
   // --------------------------------------------------------------
+  function generateIcon(name, index) {
+    const firstLetter = name.charAt(0).toUpperCase();
+    const hue = (index * 37) % 360; // разные цвета
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="hsl(${hue}, 80%, 60%)" stroke="#fff" stroke-width="4"/>
+        <text x="50" y="70" font-size="60" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" stroke="black" stroke-width="2">${firstLetter}</text>
+      </svg>
+    `;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
   const itemNames = [
-    "Туманность Ориона", "Галактика Андромеды", "Туманность Конская Голова", "Крабовидная туманность", "Галактика Водоворот",
-    "Звезда Бетельгейзе", "Планета Kepler-452b", "Туманность Кольцо", "Галактика Сомбреро", "Звезда Сириус",
-    "Туманность Пузырь", "Галактика Центавр А", "Туманность Улитка", "Столпы Творения", "Галактика Чёрный Глаз",
-    "Туманность Бабочка", "Шаровое скопление Омега Центавра", "Галактика NGC 1300", "Галактика NGC 1672", "Туманность NGC 346",
-    "Планета TRAPPIST-1e", "Экзопланета Proxima b", "Туманность Орла", "Галактика Треугольника", "Магелланово Облако",
-    "Квазар 3C 273", "Пульсар в Крабе", "Чёрная дыра M87*", "Гамма-всплеск GRB 190114C", "Сверхновая SN 1987A",
-    "Туманность Лагуна", "Туманность Трубка", "Галактика Сигара", "Галактика Веретено", "Туманность Киля",
-    "Звезда Ригель", "Звезда Вега", "Плеяды", "Гиады", "Ясли (скопление)",
-    "Галактика NGC 4414", "Галактика NGC 2841", "Галактика NGC 7331", "Галактика NGC 1232", "Галактика NGC 6744",
-    "Туманность Северная Америка", "Туманность Пеликан", "Туманность Розетка", "Туманность Конус", "Туманность Сердце"
+    "Звёздный осколок","Лунный камень","Пламенное сердце","Древняя монета","Кристалл дракона",
+    "Глаз феникса","Руна ветра","Жемчужина глубин","Клык оборотня","Перо грифона",
+    "Чешуя дракона","Коготь виверны","Слеза единорога","Корень мандрагоры","Светлячок в банке",
+    "Механическое сердце","Хрустальный череп","Золотое яблоко","Серебряная подкова","Книга заклинаний",
+    "Амулет времени","Кольцо всевластия","Кулон луны","Браслет ветра","Диадема солнца",
+    "Посох мага","Меч короля","Щит воина","Шлем викинга","Лук эльфа",
+    "Кинжал тени","Топор варвара","Булава паладина","Копьё судьбы","Молот Тора",
+    "Сфера пророчеств","Карта сокровищ","Компас странника","Фонарь душ","Ключ от бездны",
+    "Песочные часы","Весы правосудия","Зеркало истины","Маска демона","Крыло ангела",
+    "Роза ветров","Клевер удачи","Жёлудь мира","Шип розы","Лепесток лотоса"
   ];
-
-  // Массив прямых ссылок на изображения Hubble (screen версии)
-  const hubbleImages = [
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1502a.jpg",  // Орион
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1401a.jpg",  // Андромеда
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1318a.jpg",  // Конская Голова
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1307a.jpg",  // Краб
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1212a.jpg",  // Водоворот
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1112a.jpg",  // Сомбреро
-    "https://cdn.spacetelescope.org/archives/images/screen/heic1011a.jpg",  // Пузырь
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0912a.jpg",  // Столпы Творения
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0817a.jpg",  // Центавр А
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0719a.jpg",  // Улитка
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0702a.jpg",  // NGC 1672
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0611a.jpg",  // NGC 1512
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0515a.jpg",  // NGC 346
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0414a.jpg",  // NGC 1300
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0313a.jpg",  // NGC 4414
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0211a.jpg",  // NGC 2841
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0112a.jpg",  // NGC 7331
-    "https://cdn.spacetelescope.org/archives/images/screen/heic0010a.jpg",  // NGC 1232
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1814a.jpg",   // Туманность Бабочка
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1737a.jpg",   // NGC 6744
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1726a.jpg",   // Юпитер (для разнообразия)
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1717a.jpg",   // Сатурн
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1705a.jpg",   // Уран
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1641a.jpg",   // Нептун
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1635a.jpg",   // Марс
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1613a.jpg",   // Юпитер и Европа
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1603a.jpg",   // Комета
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1530a.jpg",   // Плутон
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1522a.jpg",   // Церера
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1506a.jpg",   // Веста
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1436a.jpg",   // Астероид
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1429a.jpg",   // Экзопланета
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1413a.jpg",   // Протопланетный диск
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1403a.jpg",   // Рождение звезды
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1341a.jpg",   // Смерть звезды
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1332a.jpg",   // Сверхновая
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1323a.jpg",   // Галактика-медуза
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1312a.jpg",   // Скопление галактик
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1304a.jpg",   // Гравитационная линза
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1230a.jpg",   // Квазар
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1221a.jpg",   // Чёрная дыра
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1209a.jpg",   // Пульсар
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1115a.jpg",   // Туманность NGC 7027
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1105a.jpg",   // Туманность Тарантул
-    "https://cdn.spacetelescope.org/archives/images/screen/opo1010a.jpg",   // Галактика NGC 4911
-    "https://cdn.spacetelescope.org/archives/images/screen/opo0935a.jpg",   // Галактика NGC 6217
-    "https://cdn.spacetelescope.org/archives/images/screen/opo0831a.jpg",   // Галактика Arp 147
-    "https://cdn.spacetelescope.org/archives/images/screen/opo0819a.jpg",   // Галактика NGC 1275
-    "https://cdn.spacetelescope.org/archives/images/screen/opo0803a.jpg",   // Галактика NGC 3314
-    "https://cdn.spacetelescope.org/archives/images/screen/opo0730a.jpg"    // Галактика NGC 4261
-  ];
-
   const items = [...Array(50)].map((_, i) => ({
     id: 'item' + i,
-    name: itemNames[i % itemNames.length],
+    name: itemNames[i],
     price: Math.floor(800 * Math.pow(1.25, i)),
-    img: hubbleImages[i % hubbleImages.length]
+    img: generateIcon(itemNames[i], i)   // НАДЁЖНАЯ ИКОНКА (SVG)
   }));
 
   // --------------------------------------------------------------
