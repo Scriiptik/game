@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>🌟 Astro Clicker · звёздные предметы</title>
+  <title>🌟 Astro Clicker · космические предметы</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -393,37 +393,68 @@
   updateStats();
 
   // --------------------------------------------------------------
-  // 2. Генерация предметов (50 штук) с надёжными иконками (SVG dataURI)
+  // 2. Генерация предметов (50 штук) с космическими иконками
   // --------------------------------------------------------------
-  function generateIcon(name, index) {
-    const firstLetter = name.charAt(0).toUpperCase();
-    const hue = (index * 37) % 360; // разные цвета
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="50" fill="hsl(${hue}, 80%, 60%)" stroke="#fff" stroke-width="4"/>
-        <text x="50" y="70" font-size="60" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" stroke="black" stroke-width="2">${firstLetter}</text>
-      </svg>
-    `;
-    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  function createCosmicIcon(name, index) {
+    const hue = (index * 47) % 360;
+    const isPlanet = index % 3 !== 0; // чередуем планеты и звёзды
+    const secondHue = (hue + 60) % 360;
+
+    if (isPlanet) {
+      // планета с кольцом
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="grad${index}" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+              <stop offset="0%" stop-color="hsl(${hue}, 90%, 75%)" />
+              <stop offset="100%" stop-color="hsl(${hue}, 90%, 40%)" />
+            </radialGradient>
+          </defs>
+          <circle cx="50" cy="50" r="40" fill="url(#grad${index})" stroke="white" stroke-width="2" />
+          <ellipse cx="50" cy="55" rx="45" ry="15" fill="none" stroke="hsl(${secondHue}, 80%, 70%)" stroke-width="3" stroke-dasharray="4 3" />
+          <circle cx="70" cy="30" r="5" fill="white" opacity="0.8" />
+          <circle cx="20" cy="70" r="3" fill="white" opacity="0.6" />
+          <circle cx="80" cy="75" r="4" fill="white" opacity="0.7" />
+        </svg>
+      `;
+      return 'data:image/svg+xml,' + encodeURIComponent(svg);
+    } else {
+      // звезда
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <defs>
+            <radialGradient id="starGrad${index}" cx="50%" cy="50%" r="50%" fx="40%" fy="40%">
+              <stop offset="0%" stop-color="hsl(${hue}, 100%, 80%)" />
+              <stop offset="100%" stop-color="hsl(${hue}, 100%, 50%)" />
+            </radialGradient>
+          </defs>
+          <circle cx="50" cy="50" r="35" fill="url(#starGrad${index})" />
+          <polygon points="50,10 61,40 95,40 68,57 82,90 50,72 18,90 32,57 5,40 39,40" fill="white" opacity="0.9" />
+          <circle cx="50" cy="50" r="12" fill="hsl(${hue}, 100%, 90%)" />
+        </svg>
+      `;
+      return 'data:image/svg+xml,' + encodeURIComponent(svg);
+    }
   }
 
   const itemNames = [
-    "Звёздный осколок","Лунный камень","Пламенное сердце","Древняя монета","Кристалл дракона",
-    "Глаз феникса","Руна ветра","Жемчужина глубин","Клык оборотня","Перо грифона",
-    "Чешуя дракона","Коготь виверны","Слеза единорога","Корень мандрагоры","Светлячок в банке",
-    "Механическое сердце","Хрустальный череп","Золотое яблоко","Серебряная подкова","Книга заклинаний",
-    "Амулет времени","Кольцо всевластия","Кулон луны","Браслет ветра","Диадема солнца",
-    "Посох мага","Меч короля","Щит воина","Шлем викинга","Лук эльфа",
-    "Кинжал тени","Топор варвара","Булава паладина","Копьё судьбы","Молот Тора",
-    "Сфера пророчеств","Карта сокровищ","Компас странника","Фонарь душ","Ключ от бездны",
-    "Песочные часы","Весы правосудия","Зеркало истины","Маска демона","Крыло ангела",
-    "Роза ветров","Клевер удачи","Жёлудь мира","Шип розы","Лепесток лотоса"
+    "Красная галактика", "Синяя туманность", "Золотая звезда", "Ледяная планета", "Огненный шар",
+    "Спутник Сатурна", "Пояс астероидов", "Чёрная дыра", "Пульсар", "Квазар",
+    "Млечный путь", "Андромеда", "Магелланово облако", "Солнце", "Альфа Центавра",
+    "Полярная звезда", "Сириус", "Вега", "Антарес", "Бетельгейзе",
+    "Комета Галлея", "Пояс Койпера", "Облако Оорта", "Церера", "Плутон",
+    "Европа", "Ганимед", "Титан", "Энцелад", "Ио",
+    "Марс", "Венера", "Меркурий", "Юпитер", "Сатурн",
+    "Уран", "Нептун", "Кеплер-22b", "TRAPPIST-1e", "Проксима b",
+    "Тау Кита e", "Глизе 581g", "HD 189733b", "WASP-12b", "TrES-2b",
+    "Kepler-186f", "Kepler-452b", "Luyten b", "Росс 128 b", "Тессера"
   ];
+
   const items = [...Array(50)].map((_, i) => ({
     id: 'item' + i,
     name: itemNames[i],
     price: Math.floor(800 * Math.pow(1.25, i)),
-    img: generateIcon(itemNames[i], i)   // НАДЁЖНАЯ ИКОНКА (SVG)
+    img: createCosmicIcon(itemNames[i], i)
   }));
 
   // --------------------------------------------------------------
