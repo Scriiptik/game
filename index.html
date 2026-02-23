@@ -203,18 +203,18 @@
       border-radius: 32px;
     }
     .mobile-panel.open {
-      max-height: 60vh;
-      overflow-y: auto;  /* ИСПРАВЛЕНО: теперь можно листать */
+      max-height: 80vh;           /* УВЕЛИЧЕНО для иллюминатора */
+      overflow-y: auto;
     }
 
     /* ----- ИЛЛЮМИНАТОР (круглый, большой) ----- */
     #illuminator-viewport {
       width: 100%;
-      height: 60vh;                /* чуть больше */
+      height: 80vh;                /* УВЕЛИЧЕНО ВДВОЕ (было 60vh) */
       overflow: hidden;
       position: relative;
       background: #010314;
-      border-radius: 50%;           /* круглый */
+      border-radius: 50%;
       touch-action: none;
       margin: 0 auto;
       box-shadow: 0 0 30px rgba(0,200,255,0.3);
@@ -228,7 +228,7 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
-      border-radius: 50%;           /* тоже круглый */
+      border-radius: 50%;
     }
     #illuminator-content {
       transform-origin: 0 0;
@@ -393,8 +393,20 @@
   updateStats();
 
   // --------------------------------------------------------------
-  // 2. Генерация предметов (50 штук)
+  // 2. Генерация предметов (50 штук) с надёжными иконками (SVG dataURI)
   // --------------------------------------------------------------
+  function generateIcon(name, index) {
+    const firstLetter = name.charAt(0).toUpperCase();
+    const hue = (index * 37) % 360; // разные цвета
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="hsl(${hue}, 80%, 60%)" stroke="#fff" stroke-width="4"/>
+        <text x="50" y="70" font-size="60" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold" stroke="black" stroke-width="2">${firstLetter}</text>
+      </svg>
+    `;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
   const itemNames = [
     "Звёздный осколок","Лунный камень","Пламенное сердце","Древняя монета","Кристалл дракона",
     "Глаз феникса","Руна ветра","Жемчужина глубин","Клык оборотня","Перо грифона",
@@ -411,7 +423,7 @@
     id: 'item' + i,
     name: itemNames[i],
     price: Math.floor(800 * Math.pow(1.25, i)),
-    img: `https://picsum.photos/seed/item${i}/128`
+    img: generateIcon(itemNames[i], i)   // НАДЁЖНАЯ ИКОНКА (SVG)
   }));
 
   // --------------------------------------------------------------
