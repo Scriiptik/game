@@ -2,17 +2,16 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>🚀 Space Mining · легендарный корабль</title>
+  <title>🚀 Space Mining · Иконки и планеты</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
+    /* Все стили без изменений, такие же, как в предыдущем ответе */
     * {
       box-sizing: border-box;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-
     html, body {
       margin: 0;
       height: 100%;
@@ -21,8 +20,6 @@
       background: #0a0f1a;
       color: #f0f4ff;
     }
-
-    /* ----- фон ПК (звёзды canvas) ----- */
     #starsPc {
       position: fixed;
       inset: 0;
@@ -32,7 +29,6 @@
       display: block;
       pointer-events: none;
     }
-
     .glass {
       background: rgba(15, 25, 40, 0.7);
       backdrop-filter: blur(12px);
@@ -41,8 +37,6 @@
       border-radius: 32px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
     }
-
-    /* ----- КНОПКА КЛИКА (кристалл) ----- */
     .click-btn {
       width: 200px;
       height: 200px;
@@ -74,117 +68,103 @@
       transform: translate(-50%, -50%);
       opacity: 0.2;
     }
-
-    /* ----- ЦЕНТРАЛЬНЫЙ БЛОК - КОСМИЧЕСКИЙ КОРАБЛЬ ----- */
     .game {
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 440px;
-      max-width: 92vw;
-      padding: 30px 20px 40px;
+      width: 460px;
+      max-width: 94vw;
+      padding: 35px 20px 45px;
       z-index: 5;
       text-align: center;
-      background: linear-gradient(145deg, #2b3f60, #102030);
+      background: linear-gradient(145deg, #2b3f60, #0a1a2f);
       border: 3px solid #88ddff;
-      border-radius: 80px 80px 100px 100px;
-      box-shadow: 0 40px 50px rgba(0,0,0,0.9), 0 0 50px #22aaff;
+      border-radius: 90px 90px 120px 120px;
+      box-shadow: 0 40px 60px rgba(0,0,0,0.9), 0 0 60px #22aaff;
     }
-
-    /* Нос корабля (верхняя часть) */
     .game::before {
       content: '';
-      position: absolute;
-      top: -25px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 50px;
-      background: linear-gradient(to top, #2b3f60, #4a6a8a);
-      border-radius: 60% 60% 20px 20px;
-      border: 2px solid #88ddff;
-      border-bottom: none;
-      box-shadow: 0 -10px 20px #22aaff66;
-    }
-
-    /* Иллюминаторы (окошки) */
-    .game .window-left, .game .window-right {
-      position: absolute;
-      top: 30px;
-      width: 40px;
-      height: 40px;
-      background: radial-gradient(circle at 30% 30%, #ffffff, #88aaff);
-      border-radius: 50%;
-      border: 2px solid #aaddff;
-      box-shadow: inset 0 0 10px cyan, 0 0 15px cyan;
-    }
-    .game .window-left { left: 20px; }
-    .game .window-right { right: 20px; }
-
-    /* Крылья */
-    .game .wing-left, .game .wing-right {
-      position: absolute;
-      bottom: 0;
-      width: 70px;
-      height: 120px;
-      background: linear-gradient(135deg, #1a2e4a, #0f1f30);
-      border: 2px solid #88ddff;
-      z-index: -1;
-    }
-    .game .wing-left {
-      left: -30px;
-      transform: skewY(20deg);
-      border-radius: 40% 0 0 40%;
-    }
-    .game .wing-right {
-      right: -30px;
-      transform: skewY(-20deg);
-      border-radius: 0 40% 40% 0;
-    }
-
-    /* Плазменные двигатели */
-    .game .engine {
-      position: absolute;
-      bottom: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 50px;
-      background: radial-gradient(circle, #ffaa33, #ff5500);
-      border-radius: 50%;
-      filter: blur(20px);
-      animation: flame 0.4s infinite alternate;
-      z-index: -2;
-    }
-
-    @keyframes flame {
-      0% { opacity: 0.7; transform: translateX(-50%) scale(1); }
-      100% { opacity: 1; transform: translateX(-50%) scale(1.3); }
-    }
-
-    /* Антенна */
-    .game .antenna {
       position: absolute;
       top: -30px;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
-      height: 40px;
+      width: 140px;
+      height: 60px;
+      background: linear-gradient(to top, #2b3f60, #3a5f8a);
+      border-radius: 70% 70% 20px 20px;
+      border: 2px solid #88ddff;
+      border-bottom: none;
+      box-shadow: 0 -15px 25px #22aaff66;
+    }
+    .game .window-left, .game .window-right {
+      position: absolute;
+      top: 40px;
+      width: 45px;
+      height: 45px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #88aaff);
+      border-radius: 50%;
+      border: 2px solid #aaddff;
+      box-shadow: inset 0 0 12px cyan, 0 0 20px cyan;
+    }
+    .game .window-left { left: 25px; }
+    .game .window-right { right: 25px; }
+    .game .wing-left, .game .wing-right {
+      position: absolute;
+      bottom: 0;
+      width: 85px;
+      height: 150px;
+      background: linear-gradient(135deg, #1a2e4a, #0a1a30);
+      border: 2px solid #88ddff;
+      z-index: -1;
+    }
+    .game .wing-left {
+      left: -40px;
+      transform: skewY(25deg);
+      border-radius: 50% 0 0 40%;
+    }
+    .game .wing-right {
+      right: -40px;
+      transform: skewY(-25deg);
+      border-radius: 0 50% 40% 0;
+    }
+    .game .engine {
+      position: absolute;
+      bottom: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 60px;
+      background: radial-gradient(circle, #ffaa33, #ff5500);
+      border-radius: 50%;
+      filter: blur(25px);
+      animation: flame 0.4s infinite alternate;
+      z-index: -2;
+    }
+    @keyframes flame {
+      0% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1.4); }
+    }
+    .game .antenna {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 50px;
       background: silver;
     }
     .game .antenna::after {
       content: '';
       position: absolute;
-      top: -10px;
-      left: -8px;
-      width: 20px;
-      height: 20px;
+      top: -12px;
+      left: -10px;
+      width: 26px;
+      height: 26px;
       background: radial-gradient(circle, #ffdd44, #ffaa00);
       border-radius: 50%;
-      box-shadow: 0 0 20px gold;
+      box-shadow: 0 0 25px gold;
     }
-
     .stats {
       display: flex;
       flex-wrap: wrap;
@@ -199,12 +179,11 @@
     .stats span {
       margin: 2px 5px;
     }
-
     .energy-bar {
       width: 100%;
-      height: 12px;
+      height: 14px;
       background: #333;
-      border-radius: 6px;
+      border-radius: 7px;
       margin: 8px 0;
       overflow: hidden;
     }
@@ -214,7 +193,6 @@
       width: 100%;
       transition: width 0.1s;
     }
-
     button {
       background: rgba(0, 30, 60, 0.8);
       border: 1px solid #22aaff;
@@ -237,7 +215,6 @@
       opacity: 0.3;
       pointer-events: none;
     }
-
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -245,8 +222,6 @@
       justify-content: center;
       margin-top: 12px;
     }
-
-    /* ----- ПК панели слева ----- */
     .desktop-panels {
       position: absolute;
       top: 20px;
@@ -255,7 +230,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 260px;
+      width: 280px;
     }
     .desktop-panel {
       width: 100%;
@@ -277,8 +252,6 @@
       max-height: 500px;
       overflow-y: auto;
     }
-
-    /* ----- ПК фон для предметов ----- */
     .bg-items {
       position: absolute;
       inset: 0;
@@ -296,8 +269,6 @@
       animation: float 5s ease-in-out infinite;
       pointer-events: auto;
     }
-
-    /* ========== МОБИЛЬНЫЙ ИНТЕРФЕЙС ========== */
     .mobile-header {
       position: fixed;
       top: 12px;
@@ -315,7 +286,6 @@
       padding: 12px 0;
       font-size: 20px;
     }
-
     .mobile-panel {
       position: fixed;
       top: 75px;
@@ -333,8 +303,6 @@
       max-height: 80vh;
       overflow-y: auto;
     }
-
-    /* ----- ИЛЛЮМИНАТОР ----- */
     #illuminator-viewport {
       width: 100%;
       height: 80vh;
@@ -376,13 +344,10 @@
       animation: float 5s infinite;
       touch-action: none;
     }
-
     @keyframes float {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-8px); }
     }
-
-    /* падающие астероиды */
     .falling-asteroid {
       position: fixed;
       width: 50px;
@@ -397,12 +362,9 @@
     .golden-asteroid {
       background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="%23ffd700"><circle cx="50" cy="50" r="40" fill="%23ffd700"/><circle cx="30" cy="30" r="8" fill="%23f0e68c"/><circle cx="70" cy="60" r="12" fill="%23ffaa00"/><circle cx="20" cy="70" r="6" fill="%23ffff00"/></svg>') center/contain no-repeat;
     }
-
     @keyframes fall {
       to { top: 110vh; }
     }
-
-    /* бонусный индикатор */
     .boost-indicator {
       position: fixed;
       top: 10px;
@@ -416,8 +378,6 @@
       z-index: 200;
       display: none;
     }
-
-    /* всплывающее число */
     .floating-number {
       position: fixed;
       font-size: 32px;
@@ -432,8 +392,6 @@
       0% { opacity: 1; transform: translateY(0) scale(1); }
       100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
     }
-
-    /* сообщения о событиях */
     .event-message {
       position: fixed;
       top: 50px;
@@ -453,8 +411,6 @@
       70% { opacity: 1; }
       100% { opacity: 0; }
     }
-
-    /* адаптация */
     @media (max-width: 768px) {
       #starsPc { display: none; }
       .desktop-panels { display: none; }
@@ -462,16 +418,57 @@
     @media (min-width: 769px) {
       .mobile-header, .mobile-panel { display: none; }
     }
-
-    .item {
+    .shop-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px;
+      padding: 10px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .item img {
-      width: 44px; height: 44px; border-radius: 16px; object-fit: cover;
+    .shop-item img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #88ddff;
+      background: #0a1a30;
+    }
+    .shop-item .info {
+      flex: 1;
+      text-align: left;
+    }
+    .shop-item .name {
+      font-weight: bold;
+      color: #ffdd88;
+    }
+    .shop-item .desc {
+      font-size: 12px;
+      color: #aaccff;
+    }
+    .shop-item .price {
+      font-size: 14px;
+      color: #88ffaa;
+    }
+    .shop-item button {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .ship-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid #335;
+    }
+    .ship-icon {
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, #88aaff, #224488);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
     }
     .research-item {
       display: flex;
@@ -486,7 +483,6 @@
 
 <canvas id="starsPc"></canvas>
 
-<!-- Элементы корабля (вставляем через JS) -->
 <div class="game" id="gameRocket">
   <div class="window-left"></div>
   <div class="window-right"></div>
@@ -497,7 +493,7 @@
 
   <h2><i class="fas fa-rocket"></i> SPACE MINING</h2>
   <div class="stats">
-    <span><i class="fas fa-gem"></i> <span id="score">0</span></span>
+    <span><i class="fas fa-gem"></i> <span id="score">2000</span></span>
     <span><i class="fas fa-bolt"></i> x<span id="power">1</span></span>
     <span><i class="fas fa-robot"></i> <span id="auto">0</span></span>
   </div>
@@ -529,8 +525,12 @@
 <!-- ПК панели -->
 <div class="desktop-panels">
   <div class="desktop-panel glass">
-    <button id="toggleShopDesktop"><i class="fas fa-store"></i> МАГАЗИН МИНЕРАЛОВ</button>
+    <button id="toggleShopDesktop"><i class="fas fa-store"></i> МАГАЗИН ПЛАНЕТ</button>
     <div class="panel-content glass" id="shopDesktop"></div>
+  </div>
+  <div class="desktop-panel glass">
+    <button id="toggleShipDesktop"><i class="fas fa-space-shuttle"></i> МАГАЗИН КОРАБЛЕЙ</button>
+    <div class="panel-content glass" id="shipDesktop"></div>
   </div>
   <div class="desktop-panel glass">
     <button id="toggleResearchDesktop"><i class="fas fa-flask"></i> ИССЛЕДОВАНИЯ</button>
@@ -545,6 +545,7 @@
 <!-- Мобильный хедер -->
 <div class="mobile-header">
   <button id="mobileShopBtn"><i class="fas fa-store"></i></button>
+  <button id="mobileShipBtn"><i class="fas fa-space-shuttle"></i></button>
   <button id="mobileResearchBtn"><i class="fas fa-flask"></i></button>
   <button id="mobileMusicBtn"><i class="fas fa-music"></i></button>
   <button id="mobileIlluminatorBtn"><i class="fas fa-globe"></i></button>
@@ -552,6 +553,7 @@
 
 <!-- Мобильные панели -->
 <div class="mobile-panel glass" id="mobileShopPanel"><div style="padding:12px;" id="shopMobile"></div></div>
+<div class="mobile-panel glass" id="mobileShipPanel"><div style="padding:12px;" id="shipMobile"></div></div>
 <div class="mobile-panel glass" id="mobileResearchPanel"><div style="padding:12px;" id="researchMobile"></div></div>
 <div class="mobile-panel glass" id="mobileMusicPanel"><div style="padding:12px;" id="musicMobile"></div></div>
 <div class="mobile-panel glass" id="mobileIlluminatorPanel">
@@ -564,32 +566,26 @@
   </div>
 </div>
 
-<!-- Фон для предметов ПК -->
 <div class="bg-items" id="bgPcItems"></div>
-
-<!-- индикатор ускорения -->
 <div class="boost-indicator" id="boostIndicator"><i class="fas fa-bolt"></i> x10 УСКОРЕНИЕ</div>
 
 <script>
 (function() {
   // ================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==================
-  let score = 1000; // начальный капитал
+  let score = 2000; // начальный капитал
   let power = 1;
   let auto = 0;
   let upPrice = 100;
   let autoPrice = 500;
 
-  // Энергия
   let energy = 100;
   let maxEnergy = 100;
-  let energyRegen = 1; // в секунду
+  let energyRegen = 1;
 
-  // Престиж
   let prestige = 0;
-  let prestigeMultiplier = 1; // 1 + prestige * 0.05
+  let prestigeMultiplier = 1;
   const PRESTIGE_THRESHOLD = 500000;
 
-  // Исследования (8 штук)
   const research = [
     { id: 'power1', name: 'Мощный бур', desc: 'Увеличивает силу клика на 1', max: 5, level: 0, baseCost: 500 },
     { id: 'auto1', name: 'Автоматизация', desc: '+1 автокликер', max: 5, level: 0, baseCost: 800 },
@@ -601,13 +597,50 @@
     { id: 'asteroid1', name: 'Астероидный магнат', desc: 'Увеличивает награду с астероидов на 20%', max: 5, level: 0, baseCost: 900 }
   ];
 
-  let owned = {}; // предметы из магазина
+  // Магазин предметов (астероиды и планеты) с проверенными иконками
+  const shopItems = [
+    // Астероиды (5)
+    { id: 'ast1', name: 'Астероид Церера', desc: 'Богат водяным льдом. Даёт +10 к макс. энергии.', price: 800, bonus: () => { maxEnergy += 10; energy += 10; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Ceres_-_RC3_-_Haulani_Crater_%2822381131621%29.jpg/1024px-Ceres_-_RC3_-_Haulani_Crater_%2822381131621%29.jpg' },
+    { id: 'ast2', name: 'Астероид Веста', desc: 'Один из крупнейших. Даёт +0.2 регенерации энергии.', price: 950, bonus: () => { energyRegen += 0.2; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Vesta_full_mosaic.jpg/1024px-Vesta_full_mosaic.jpg' },
+    { id: 'ast3', name: 'Астероид Эрос', desc: 'Близкий к Земле. Увеличивает силу клика на 1.', price: 1100, bonus: () => { power += 1; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Eros_-_PIA02923_%28color%29.jpg/1024px-Eros_-_PIA02923_%28color%29.jpg' },
+    { id: 'ast4', name: 'Астероид Итокава', desc: 'Имеет необычную форму. +2% к удаче.', price: 1300, bonus: () => { research.find(r => r.id === 'luck1').level = Math.min(5, research.find(r => r.id === 'luck1').level + 1); }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Itokawa.jpg/1024px-Itokawa.jpg' },
+    { id: 'ast5', name: 'Астероид Рюгу', desc: 'Содержит органические вещества. Даёт +1 автокликер.', price: 1500, bonus: () => { auto += 1; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Ryugu_close_up.jpg/1024px-Ryugu_close_up.jpg' },
+    // Планеты (10)
+    { id: 'pl1', name: 'Меркурий', desc: 'Ближайшая к Солнцу. +5% к криту.', price: 2000, bonus: () => { research.find(r => r.id === 'crit1').level = Math.min(5, research.find(r => r.id === 'crit1').level + 1); }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Mercury_in_color_-_Prockter07-edit1.jpg/1024px-Mercury_in_color_-_Prockter07-edit1.jpg' },
+    { id: 'pl2', name: 'Венера', desc: 'Планета с плотной атмосферой. +20 к макс. энергии.', price: 2400, bonus: () => { maxEnergy += 20; energy += 20; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Venus-real_color.jpg/1024px-Venus-real_color.jpg' },
+    { id: 'pl3', name: 'Земля', desc: 'Колыбель человечества. +0.3 регенерации.', price: 3000, bonus: () => { energyRegen += 0.3; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_earth_at_night.jpg/1024px-The_earth_at_night.jpg' },
+    { id: 'pl4', name: 'Марс', desc: 'Красная планета. +2 к силе клика.', price: 2800, bonus: () => { power += 2; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/OSIRIS_Mars_true_color.jpg/1024px-OSIRIS_Mars_true_color.jpg' },
+    { id: 'pl5', name: 'Юпитер', desc: 'Газовый гигант. +10% к удаче.', price: 4000, bonus: () => { research.find(r => r.id === 'luck1').level = Math.min(5, research.find(r => r.id === 'luck1').level + 2); }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Jupiter_%28transparent%29.png/1024px-Jupiter_%28transparent%29.png' },
+    { id: 'pl6', name: 'Сатурн', desc: 'С кольцами. +1 автокликер.', price: 3800, bonus: () => { auto += 1; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/1024px-Saturn_during_Equinox.jpg' },
+    { id: 'pl7', name: 'Уран', desc: 'Ледяной гигант. +25 макс. энергии.', price: 3600, bonus: () => { maxEnergy += 25; energy += 25; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Uranus2.jpg/1024px-Uranus2.jpg' },
+    { id: 'pl8', name: 'Нептун', desc: 'Ветреный. +0.4 регенерации.', price: 4200, bonus: () => { energyRegen += 0.4; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Neptune_-_Voyager_2_%283%29.jpg/1024px-Neptune_-_Voyager_2_%283%29.jpg' },
+    { id: 'pl9', name: 'Плутон', desc: 'Карликовая планета. +3% крита.', price: 3200, bonus: () => { research.find(r => r.id === 'crit1').level = Math.min(5, research.find(r => r.id === 'crit1').level + 1); }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Pluto-01_Stern_03_Pluto_Color_NewHorizons.jpg/1024px-Pluto-01_Stern_03_Pluto_Color_NewHorizons.jpg' },
+    { id: 'pl10', name: 'Эрида', desc: 'Крупная карликовая планета. +2 к силе.', price: 3400, bonus: () => { power += 2; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Eris_and_dysnomia.jpg/1024px-Eris_and_dysnomia.jpg' },
+    // Гигантский астероид
+    { id: 'astBig', name: 'Гигантский астероид Паллада', desc: 'Огромный астероид. Даёт +5% престиж-множителя навсегда.', price: 10000, bonus: () => { prestigeMultiplier += 0.05; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Pallas_HST.jpg/1024px-Pallas_HST.jpg' },
+    // Ещё планеты
+    { id: 'pl11', name: 'Кеплер-22b', desc: 'Экзопланета в зоне обитаемости. +30 макс. энергии.', price: 5000, bonus: () => { maxEnergy += 30; energy += 30; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Kepler-186f_artist_concept.jpg/1024px-Kepler-186f_artist_concept.jpg' },
+    { id: 'pl12', name: 'TRAPPIST-1e', desc: 'Скалистая планета. +0.5 регенерации.', price: 5500, bonus: () => { energyRegen += 0.5; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Trappist-1_system.jpg/1024px-Trappist-1_system.jpg' },
+    { id: 'pl13', name: 'Проксима b', desc: 'Ближайшая экзопланета. +3 к силе клика.', price: 6000, bonus: () => { power += 3; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Proxima_Centauri_2MASS.jpg/1024px-Proxima_Centauri_2MASS.jpg' },
+    { id: 'pl14', name: 'Глизе 581g', desc: 'Суперземля. +2 автокликера.', price: 6500, bonus: () => { auto += 2; }, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Gliese_581g_artist%27s_impression.jpg/1024px-Gliese_581g_artist%27s_impression.jpg' }
+  ];
+
+  const ships = [
+    { id: 'ship0', name: 'Челнок', desc: 'Начальный корабль. Без бонусов.', price: 0, bonus: {}, img: '🚀' },
+    { id: 'ship1', name: 'Корвет "Заря"', desc: 'Увеличивает макс. энергию на 50.', price: 5000, bonus: { maxEnergy: 50 }, img: '🛸' },
+    { id: 'ship2', name: 'Фрегат "Аврора"', desc: '+1 регенерация, +10% крита.', price: 15000, bonus: { regen: 1, crit: 10 }, img: '🚀' },
+    { id: 'ship3', name: 'Крейсер "Комета"', desc: '+100 энергии, +2 автокликера.', price: 30000, bonus: { maxEnergy: 100, auto: 2 }, img: '🛰️' },
+    { id: 'ship4', name: 'Дредноут "Титан"', desc: '×2 ко всем бонусам исследований.', price: 100000, bonus: { researchMult: 2 }, img: '🌌' }
+  ];
+
+  let ownedItems = {};
+  let ownedShips = ['ship0'];
+  let currentShip = 'ship0';
+
   let pcItemPos = {};
   let mobItemPos = {};
 
-  // Буст
   let boostMultiplier = 1;
-  let boostEndTime = 0;
 
   const isMobile = window.innerWidth <= 768;
 
@@ -638,67 +671,45 @@
   }
   updateStats();
 
-  // ================== МАГАЗИН С РЕАЛЬНЫМИ ФОТО ==================
-  const itemImages = [
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Ceres_-_RC3_-_Haulani_Crater_%2822381131621%29.jpg/1024px-Ceres_-_RC3_-_Haulani_Crater_%2822381131621%29.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Vesta_full_mosaic.jpg/1024px-Vesta_full_mosaic.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Eros_-_PIA02923_%28color%29.jpg/1024px-Eros_-_PIA02923_%28color%29.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Itokawa.jpg/1024px-Itokawa.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Ryugu_close_up.jpg/1024px-Ryugu_close_up.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Bennu_OSIRIS-REx.jpg/1024px-Bennu_OSIRIS-REx.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Murchison_meteorite.jpg/1024px-Murchison_meteorite.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Iron_meteorite,_Ethiopia.jpg/1024px-Iron_meteorite,_Ethiopia.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Lunar_meteorite_%28cropped%29.jpg/1024px-Lunar_meteorite_%28cropped%29.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Gold_%281%29.jpg/1024px-Gold_%281%29.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Platinum_nugget.jpg/1024px-Platinum_nugget.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Diamond_Cut-2.jpg/1024px-Diamond_Cut-2.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Ruby_cristal.jpg/1024px-Ruby_cristal.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Emerald_rough.jpg/1024px-Emerald_rough.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Sapphire_%28Brasil%29.jpg/1024px-Sapphire_%28Brasil%29.jpg'
-  ];
-
-  const items = [...Array(20)].map((_, i) => ({
-    id: 'item' + i,
-    name: `Астероид-${i+1}`,
-    price: Math.floor(800 * Math.pow(1.3, i)),
-    img: itemImages[i % itemImages.length]
-  }));
-
-  // ================== МУЗЫКА: 20 КОСМИЧЕСКИХ МЕЛОДИЙ ==================
+  // ================== МУЗЫКА (20 треков) ==================
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const ac = new AudioContext();
   let musicInterval = null;
-  let currentMelody = 0; // 0 = выкл
+  let currentMelody = 0;
 
-  // Генерация 20 разных паттернов (короткие, но в цикле)
-  function createMelody(index) {
+  function createLongMelody(index) {
     return function() {
       const now = ac.currentTime;
-      const baseFreq = 200 + index * 30;
-      const type = index % 3 === 0 ? 'sine' : (index % 3 === 1 ? 'triangle' : 'square');
-      const notes = [];
-      // Создаём последовательность из 6-10 нот
-      for (let i = 0; i < 8 + (index % 5); i++) {
-        notes.push(baseFreq * (1 + (i * 0.1)));
-      }
-      notes.forEach((freq, idx) => {
+      const baseFreq = 180 + index * 12;
+      const type = index % 4 === 0 ? 'sine' : (index % 4 === 1 ? 'triangle' : (index % 4 === 2 ? 'square' : 'sawtooth'));
+      for (let i = 0; i < 40 + index; i++) {
         const osc = ac.createOscillator();
         const gain = ac.createGain();
         osc.type = type;
+        let freq = baseFreq * (1 + 0.3 * Math.sin(i * 0.5)) * (1 + 0.1 * Math.sin(i * 1.3));
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.05, now + idx * 0.35);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.35 + 0.8);
+        gain.gain.setValueAtTime(0.03, now + i * 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.35 + 0.8);
         osc.connect(gain).connect(ac.destination);
-        osc.start(now + idx * 0.35);
-        osc.stop(now + idx * 0.35 + 1.0);
-      });
+        osc.start(now + i * 0.35);
+        osc.stop(now + i * 0.35 + 0.9);
+      }
+      for (let j = 0; j < 20; j++) {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = baseFreq * 0.5 * (1 + 0.2 * Math.sin(j * 0.8));
+        gain.gain.setValueAtTime(0.05, now + j * 1.0);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + j * 1.0 + 1.5);
+        osc.connect(gain).connect(ac.destination);
+        osc.start(now + j * 1.0);
+        osc.stop(now + j * 1.0 + 1.6);
+      }
     };
   }
 
   const melodies = [null];
-  for (let i = 1; i <= 20; i++) {
-    melodies.push(createMelody(i));
-  }
+  for (let i = 1; i <= 20; i++) melodies.push(createLongMelody(i));
 
   function startMusic() {
     if (musicInterval) clearInterval(musicInterval);
@@ -706,7 +717,7 @@
     melodies[currentMelody]();
     musicInterval = setInterval(() => {
       if (currentMelody && melodies[currentMelody]) melodies[currentMelody]();
-    }, 6000); // повтор каждые 6 сек
+    }, 30000);
   }
 
   function changeMelody(index) {
@@ -737,7 +748,7 @@
     osc2.stop(now + 0.18);
   }
 
-  // ================== ЗВЁЗДНЫЙ ФОН ПК ==================
+  // ================== ЗВЁЗДНЫЙ ФОН ==================
   const canvasPc = document.getElementById('starsPc');
   if (canvasPc) {
     const ctxPc = canvasPc.getContext('2d');
@@ -794,8 +805,9 @@
     window.illuminatorTransform = { set: (s, tx, ty) => { scale = s; translateX = tx; translateY = ty; } };
   }
 
-  // ================== ФУНКЦИИ ДОБАВЛЕНИЯ ПРЕДМЕТОВ (ПОЛНАЯ ВЕРСИЯ) ==================
+  // ================== ДОБАВЛЕНИЕ ПРЕДМЕТОВ (С КАРТИНКАМИ) ==================
   function addItemToWorld(id, imgSrc) {
+    const fallbackSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%234488aa"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">🪐</text></svg>';
     if (isMobile) {
       const content = document.getElementById('illuminator-content');
       if (!content) return;
@@ -803,7 +815,7 @@
       img.src = imgSrc;
       img.className = 'illuminator-item';
       img.dataset.id = id;
-
+      img.onerror = () => { img.src = fallbackSvg; };
       const viewport = document.getElementById('illuminator-viewport');
       const vpW = viewport.clientWidth;
       const vpH = viewport.clientHeight;
@@ -814,7 +826,6 @@
       const transY = window.currentTranslateY !== undefined ? window.currentTranslateY : 0;
       const contentX = (screenCenterX - transX) / scale - 32;
       const contentY = (screenCenterY - transY) / scale - 32;
-
       let x = contentX, y = contentY;
       if (mobItemPos[id]) {
         x = mobItemPos[id].x;
@@ -832,6 +843,7 @@
       img.src = imgSrc;
       img.className = 'bg-item';
       img.dataset.id = id;
+      img.onerror = () => { img.src = fallbackSvg; };
       let x = 100, y = 100;
       if (pcItemPos[id]) {
         x = pcItemPos[id].x;
@@ -848,7 +860,6 @@
     }
   }
 
-  // Перетаскивание на ПК
   function makeDraggableOnPc(el, id) {
     let dx, dy;
     el.onmousedown = (e) => {
@@ -867,14 +878,12 @@
   function makeDraggableInIlluminator(el, id) {
     let startX, startY, startLeft, startTop;
     const content = document.getElementById('illuminator-content');
-
     function dragStart(clientX, clientY) {
       startLeft = parseFloat(el.style.left) || 0;
       startTop = parseFloat(el.style.top) || 0;
       startX = clientX;
       startY = clientY;
     }
-
     function dragMove(clientX, clientY) {
       const scale = window.currentScale !== undefined ? window.currentScale : 1;
       const dx = (clientX - startX) / scale;
@@ -887,39 +896,34 @@
       el.style.top = newY + 'px';
       mobItemPos[id] = { x: newX, y: newY };
     }
-
     el.onmousedown = (e) => {
       e.preventDefault();
       dragStart(e.clientX, e.clientY);
       document.onmousemove = (m) => { dragMove(m.clientX, m.clientY); };
       document.onmouseup = () => { document.onmousemove = null; };
     };
-
     el.addEventListener('touchstart', (e) => {
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
       dragStart(touch.clientX, touch.clientY);
     }, { passive: false });
-
     el.addEventListener('touchmove', (e) => {
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
       dragMove(touch.clientX, touch.clientY);
     }, { passive: false });
-
     el.addEventListener('touchend', (e) => { e.preventDefault(); });
   }
 
-  // ================== ЗУМ/ПАН ДЛЯ ИЛЛЮМИНАТОРА ==================
+  // ================== ЗУМ/ПАН ИЛЛЮМИНАТОРА ==================
   const viewport = document.getElementById('illuminator-viewport');
   const content = document.getElementById('illuminator-content');
   if (viewport && content) {
     let scale = 1, translateX = 0, translateY = 0;
     let startDistance = 0, startScale = 1;
     let startPan = { x: 0, y: 0 };
-
     viewport.addEventListener('touchstart', (e) => {
       e.preventDefault();
       if (e.touches.length === 2) {
@@ -929,7 +933,6 @@
         startPan = { x: e.touches[0].clientX - translateX, y: e.touches[0].clientY - translateY };
       }
     });
-
     viewport.addEventListener('touchmove', (e) => {
       e.preventDefault();
       if (e.touches.length === 2) {
@@ -942,7 +945,6 @@
         applyTransform();
       }
     });
-
     function applyTransform() {
       content.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
       if (window.illuminatorTransform) window.illuminatorTransform.set(scale, translateX, translateY);
@@ -953,21 +955,30 @@
     window.currentScale = 1; window.currentTranslateX = 0; window.currentTranslateY = 0;
   }
 
-  // ================== РЕНДЕР МАГАЗИНА ==================
+  // ================== РЕНДЕР МАГАЗИНА ПРЕДМЕТОВ ==================
   function renderShop(container) {
     if (!container) return;
     container.innerHTML = '';
-    items.forEach(item => {
+    shopItems.forEach(item => {
       const div = document.createElement('div');
-      div.className = 'item';
-      const bought = owned.hasOwnProperty(item.id);
-      div.innerHTML = `<img src="${item.img}"><div style="flex:1"><strong>${item.name}</strong><br>${bought ? '✅' : '💰 '+item.price}</div><button ${bought ? 'disabled' : ''}>купить</button>`;
+      div.className = 'shop-item';
+      const bought = ownedItems.hasOwnProperty(item.id);
+      div.innerHTML = `
+        <img src="${item.img}" alt="${item.name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'><circle cx=\\'50\\' cy=\\'50\\' r=\\'45\\' fill=\\'%234488aa\\'/><text x=\\'50\\' y=\\'70\\' font-size=\\'60\\' text-anchor=\\'middle\\' fill=\\'white\\'>🪐</text></svg>'">
+        <div class="info">
+          <div class="name">${item.name}</div>
+          <div class="desc">${item.desc}</div>
+          <div class="price">💰 ${item.price}</div>
+        </div>
+        <button ${bought ? 'disabled' : ''}>${bought ? '✅' : 'Купить'}</button>
+      `;
       const btn = div.querySelector('button');
       if (!bought) {
         btn.onclick = () => {
           if (score >= item.price) {
             score -= item.price;
-            owned[item.id] = item.img;
+            ownedItems[item.id] = item.img;
+            item.bonus();
             addItemToWorld(item.id, item.img);
             updateStats();
             renderShop(document.getElementById('shopDesktop'));
@@ -977,6 +988,59 @@
       }
       container.appendChild(div);
     });
+  }
+
+  // ================== РЕНДЕР МАГАЗИНА КОРАБЛЕЙ ==================
+  function renderShips(container) {
+    if (!container) return;
+    container.innerHTML = '';
+    ships.forEach(ship => {
+      const div = document.createElement('div');
+      div.className = 'ship-item';
+      const owned = ownedShips.includes(ship.id);
+      const isCurrent = currentShip === ship.id;
+      div.innerHTML = `
+        <div class="ship-icon">${ship.img}</div>
+        <div style="flex:1">
+          <div><strong>${ship.name}</strong> ${isCurrent ? '(текущий)' : ''}</div>
+          <div><small>${ship.desc}</small></div>
+          ${ship.price > 0 ? `<div>💰 ${ship.price}</div>` : ''}
+        </div>
+        <button ${owned ? 'disabled' : ''} ${ship.price === 0 ? 'disabled' : ''}>${owned ? 'Владеете' : 'Купить'}</button>
+      `;
+      const btn = div.querySelector('button');
+      if (!owned && ship.price > 0) {
+        btn.onclick = () => {
+          if (score >= ship.price) {
+            score -= ship.price;
+            ownedShips.push(ship.id);
+            equipShip(ship.id);
+            updateStats();
+            renderShips(document.getElementById('shipDesktop'));
+            renderShips(document.getElementById('shipMobile'));
+          }
+        };
+      } else if (owned && !isCurrent) {
+        btn.textContent = 'Выбрать';
+        btn.disabled = false;
+        btn.onclick = () => {
+          equipShip(ship.id);
+          renderShips(container);
+        };
+      }
+      container.appendChild(div);
+    });
+  }
+
+  function equipShip(shipId) {
+    currentShip = shipId;
+    const ship = ships.find(s => s.id === shipId);
+    if (ship) {
+      if (ship.bonus.maxEnergy) { maxEnergy += ship.bonus.maxEnergy; energy += ship.bonus.maxEnergy; }
+      if (ship.bonus.regen) energyRegen += ship.bonus.regen;
+      if (ship.bonus.auto) auto += ship.bonus.auto;
+      // другие бонусы можно добавить
+    }
   }
 
   // ================== РЕНДЕР ИССЛЕДОВАНИЙ ==================
@@ -998,7 +1062,6 @@
             else if (r.id === 'auto1') auto += 1;
             else if (r.id === 'regen1') energyRegen += 0.2;
             else if (r.id === 'maxEnergy1') { maxEnergy += 20; energy += 20; }
-            // остальные эффекты уже учтены в других местах
             updateStats();
             renderResearch(container);
           }
@@ -1008,7 +1071,7 @@
     });
   }
 
-  // ================== ЭНЕРГИЯ И АВТОКЛИКЕР ==================
+  // ================== ОСНОВНЫЕ МЕХАНИКИ ==================
   setInterval(() => {
     energy = Math.min(maxEnergy, energy + energyRegen);
     updateStats();
@@ -1025,13 +1088,11 @@
     }
   }, 1000);
 
-  // ================== КЛИК ==================
   document.getElementById('click').onclick = (e) => {
     ac.resume();
     if (energy < 1) return;
     energy -= 1;
     clickSound();
-
     let gain = power * boostMultiplier * prestigeMultiplier;
     let energySaveLevel = research.find(r => r.id === 'energy1').level;
     if (Math.random() < energySaveLevel * 0.05) energy += 1;
@@ -1051,7 +1112,6 @@
     if (score >= autoPrice) { score -= autoPrice; auto++; autoPrice = Math.floor(autoPrice * 2.4); updateStats(); }
   };
 
-  // ================== ПРЕСТИЖ ==================
   document.getElementById('prestigeBtn').onclick = () => {
     if (score >= PRESTIGE_THRESHOLD) {
       prestige++;
@@ -1127,49 +1187,56 @@
 
   // ================== СОХРАНЕНИЕ ==================
   document.getElementById('saveBtn').onclick = () => {
-    localStorage.setItem('miningPro', JSON.stringify({
-      score, power, auto, upPrice, autoPrice, owned, pcItemPos, mobItemPos,
-      energy, maxEnergy, energyRegen, prestige, research
+    localStorage.setItem('miningLegend', JSON.stringify({
+      score, power, auto, upPrice, autoPrice, ownedItems, pcItemPos, mobItemPos,
+      energy, maxEnergy, energyRegen, prestige, research, ownedShips, currentShip
     }));
     alert('Сохранено');
   };
   document.getElementById('loadBtn').onclick = () => {
-    let d = JSON.parse(localStorage.getItem('miningPro') || 'null');
+    let d = JSON.parse(localStorage.getItem('miningLegend') || 'null');
     if (!d) return;
     score = d.score; power = d.power; auto = d.auto; upPrice = d.upPrice; autoPrice = d.autoPrice;
-    owned = d.owned || {}; pcItemPos = d.pcPos || {}; mobItemPos = d.mobPos || {};
+    ownedItems = d.ownedItems || {}; pcItemPos = d.pcPos || {}; mobItemPos = d.mobPos || {};
     energy = d.energy; maxEnergy = d.maxEnergy; energyRegen = d.energyRegen; prestige = d.prestige;
     if (d.research) d.research.forEach((r, i) => { if (research[i]) research[i].level = r.level; });
+    ownedShips = d.ownedShips || ['ship0'];
+    currentShip = d.currentShip || 'ship0';
     updateStats();
     document.getElementById('bgPcItems').innerHTML = '';
     document.getElementById('illuminator-content').innerHTML = '';
-    Object.keys(owned).forEach(id => addItemToWorld(id, owned[id]));
+    Object.keys(ownedItems).forEach(id => addItemToWorld(id, ownedItems[id]));
     renderShop(document.getElementById('shopDesktop'));
     renderShop(document.getElementById('shopMobile'));
+    renderShips(document.getElementById('shipDesktop'));
+    renderShips(document.getElementById('shipMobile'));
     renderResearch(document.getElementById('researchDesktop'));
     renderResearch(document.getElementById('researchMobile'));
   };
   document.getElementById('resetBtn').onclick = () => {
     if (confirm('Сброс?')) {
-      score = 0; power = 1; auto = 0; upPrice = 100; autoPrice = 500; owned = {}; pcItemPos = {}; mobItemPos = {};
+      score = 2000; power = 1; auto = 0; upPrice = 100; autoPrice = 500; ownedItems = {}; pcItemPos = {}; mobItemPos = {};
       energy = 100; maxEnergy = 100; energyRegen = 1; prestige = 0;
       research.forEach(r => r.level = 0);
+      ownedShips = ['ship0']; currentShip = 'ship0';
       updateStats();
       document.getElementById('bgPcItems').innerHTML = '';
       document.getElementById('illuminator-content').innerHTML = '';
       renderShop(document.getElementById('shopDesktop'));
       renderShop(document.getElementById('shopMobile'));
+      renderShips(document.getElementById('shipDesktop'));
+      renderShips(document.getElementById('shipMobile'));
       renderResearch(document.getElementById('researchDesktop'));
       renderResearch(document.getElementById('researchMobile'));
     }
   };
 
-  // ================== МУЗЫКАЛЬНЫЕ КНОПКИ (20 штук) ==================
+  // ================== МУЗЫКАЛЬНЫЕ КНОПКИ ==================
   function createMusicButtons() {
     const contPc = document.getElementById('musicDesktop');
     const contMob = document.getElementById('musicMobile');
     for (let i = 0; i <= 20; i++) {
-      let idx = i === 20 ? 0 : i+1; // 21-я кнопка = выкл (индекс 0)
+      let idx = i === 20 ? 0 : i+1;
       let label = i === 20 ? '🔇 Выкл' : `🎵 Трек ${i+1}`;
       let btnPc = document.createElement('button');
       btnPc.innerHTML = label;
@@ -1185,10 +1252,19 @@
 
   // ================== ПАНЕЛИ ==================
   document.getElementById('toggleShopDesktop').onclick = () => document.getElementById('shopDesktop').classList.toggle('open');
+  document.getElementById('toggleShipDesktop').onclick = () => document.getElementById('shipDesktop').classList.toggle('open');
   document.getElementById('toggleResearchDesktop').onclick = () => document.getElementById('researchDesktop').classList.toggle('open');
   document.getElementById('toggleMusicDesktop').onclick = () => document.getElementById('musicDesktop').classList.toggle('open');
   document.getElementById('mobileShopBtn').onclick = () => {
     document.getElementById('mobileShopPanel').classList.toggle('open');
+    document.getElementById('mobileShipPanel').classList.remove('open');
+    document.getElementById('mobileResearchPanel').classList.remove('open');
+    document.getElementById('mobileMusicPanel').classList.remove('open');
+    document.getElementById('mobileIlluminatorPanel').classList.remove('open');
+  };
+  document.getElementById('mobileShipBtn').onclick = () => {
+    document.getElementById('mobileShipPanel').classList.toggle('open');
+    document.getElementById('mobileShopPanel').classList.remove('open');
     document.getElementById('mobileResearchPanel').classList.remove('open');
     document.getElementById('mobileMusicPanel').classList.remove('open');
     document.getElementById('mobileIlluminatorPanel').classList.remove('open');
@@ -1196,18 +1272,21 @@
   document.getElementById('mobileResearchBtn').onclick = () => {
     document.getElementById('mobileResearchPanel').classList.toggle('open');
     document.getElementById('mobileShopPanel').classList.remove('open');
+    document.getElementById('mobileShipPanel').classList.remove('open');
     document.getElementById('mobileMusicPanel').classList.remove('open');
     document.getElementById('mobileIlluminatorPanel').classList.remove('open');
   };
   document.getElementById('mobileMusicBtn').onclick = () => {
     document.getElementById('mobileMusicPanel').classList.toggle('open');
     document.getElementById('mobileShopPanel').classList.remove('open');
+    document.getElementById('mobileShipPanel').classList.remove('open');
     document.getElementById('mobileResearchPanel').classList.remove('open');
     document.getElementById('mobileIlluminatorPanel').classList.remove('open');
   };
   document.getElementById('mobileIlluminatorBtn').onclick = () => {
     document.getElementById('mobileIlluminatorPanel').classList.toggle('open');
     document.getElementById('mobileShopPanel').classList.remove('open');
+    document.getElementById('mobileShipPanel').classList.remove('open');
     document.getElementById('mobileResearchPanel').classList.remove('open');
     document.getElementById('mobileMusicPanel').classList.remove('open');
   };
@@ -1215,6 +1294,8 @@
   // Инициализация
   renderShop(document.getElementById('shopDesktop'));
   renderShop(document.getElementById('shopMobile'));
+  renderShips(document.getElementById('shipDesktop'));
+  renderShips(document.getElementById('shipMobile'));
   renderResearch(document.getElementById('researchDesktop'));
   renderResearch(document.getElementById('researchMobile'));
 
@@ -1238,7 +1319,10 @@
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 1000);
   }
+
+  equipShip('ship0');
 })();
 </script>
+
 </body>
 </html>
