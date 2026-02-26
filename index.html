@@ -2,8 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>🌟 Astro Clicker · космические предметы</title>
+  <title>🚀 Space Mining · легендарный корабль</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
       box-sizing: border-box;
@@ -31,81 +33,205 @@
       pointer-events: none;
     }
 
-    /* ----- стеклянные панели ----- */
     .glass {
-      background: rgba(15, 25, 40, 0.6);
+      background: rgba(15, 25, 40, 0.7);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(120, 180, 255, 0.25);
+      border: 1px solid rgba(0, 255, 200, 0.3);
       border-radius: 32px;
-      box-shadow: 0 20px 40px rgba(0, 10, 30, 0.6);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
     }
 
-    /* ----- КНОПКА КЛИКА (круглая) ----- */
+    /* ----- КНОПКА КЛИКА (кристалл) ----- */
     .click-btn {
       width: 200px;
       height: 200px;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #fff6b0, #ffaa33);
-      border: none;
-      box-shadow: 0 0 30px #ffb347, 0 10px 20px rgba(0,0,0,0.5);
+      background: radial-gradient(circle at 30% 30%, #aaffdd, #22aaff);
+      border: 4px solid #aaddff;
+      box-shadow: 0 0 30px #22aaff, 0 10px 20px rgba(0,0,0,0.5);
       font-size: 32px;
       font-weight: bold;
-      color: #1a1f2e;
+      color: #001122;
       text-transform: uppercase;
-      letter-spacing: 4px;
       cursor: pointer;
       transition: 0.1s;
-      margin: 20px auto;
+      margin: 10px auto;
       display: block;
+      position: relative;
+      overflow: hidden;
     }
     .click-btn:active {
       transform: scale(0.92);
-      box-shadow: 0 0 60px #ffdd44, 0 5px 15px black;
+      box-shadow: 0 0 60px #88ddff;
+    }
+    .click-btn::after {
+      content: '💎';
+      position: absolute;
+      font-size: 60px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.2;
     }
 
-    /* ----- общий центр ----- */
+    /* ----- ЦЕНТРАЛЬНЫЙ БЛОК - КОСМИЧЕСКИЙ КОРАБЛЬ ----- */
     .game {
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 380px;
-      max-width: 90vw;
-      padding: 24px 20px;
+      width: 440px;
+      max-width: 92vw;
+      padding: 30px 20px 40px;
       z-index: 5;
       text-align: center;
-      background: rgba(5, 15, 30, 0.7);
-      backdrop-filter: blur(16px);
-      border-radius: 48px;
+      background: linear-gradient(145deg, #2b3f60, #102030);
+      border: 3px solid #88ddff;
+      border-radius: 80px 80px 100px 100px;
+      box-shadow: 0 40px 50px rgba(0,0,0,0.9), 0 0 50px #22aaff;
+    }
+
+    /* Нос корабля (верхняя часть) */
+    .game::before {
+      content: '';
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 50px;
+      background: linear-gradient(to top, #2b3f60, #4a6a8a);
+      border-radius: 60% 60% 20px 20px;
+      border: 2px solid #88ddff;
+      border-bottom: none;
+      box-shadow: 0 -10px 20px #22aaff66;
+    }
+
+    /* Иллюминаторы (окошки) */
+    .game .window-left, .game .window-right {
+      position: absolute;
+      top: 30px;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #88aaff);
+      border-radius: 50%;
+      border: 2px solid #aaddff;
+      box-shadow: inset 0 0 10px cyan, 0 0 15px cyan;
+    }
+    .game .window-left { left: 20px; }
+    .game .window-right { right: 20px; }
+
+    /* Крылья */
+    .game .wing-left, .game .wing-right {
+      position: absolute;
+      bottom: 0;
+      width: 70px;
+      height: 120px;
+      background: linear-gradient(135deg, #1a2e4a, #0f1f30);
+      border: 2px solid #88ddff;
+      z-index: -1;
+    }
+    .game .wing-left {
+      left: -30px;
+      transform: skewY(20deg);
+      border-radius: 40% 0 0 40%;
+    }
+    .game .wing-right {
+      right: -30px;
+      transform: skewY(-20deg);
+      border-radius: 0 40% 40% 0;
+    }
+
+    /* Плазменные двигатели */
+    .game .engine {
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 50px;
+      background: radial-gradient(circle, #ffaa33, #ff5500);
+      border-radius: 50%;
+      filter: blur(20px);
+      animation: flame 0.4s infinite alternate;
+      z-index: -2;
+    }
+
+    @keyframes flame {
+      0% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+    }
+
+    /* Антенна */
+    .game .antenna {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 40px;
+      background: silver;
+    }
+    .game .antenna::after {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -8px;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #ffdd44, #ffaa00);
+      border-radius: 50%;
+      box-shadow: 0 0 20px gold;
     }
 
     .stats {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
-      font-size: 18px;
-      margin: 12px 0;
-      background: rgba(0,0,0,0.3);
-      padding: 10px 15px;
+      font-size: 16px;
+      margin: 8px 0;
+      background: rgba(0, 20, 40, 0.7);
+      padding: 10px;
       border-radius: 40px;
+      border: 1px solid #22aaff;
+    }
+    .stats span {
+      margin: 2px 5px;
+    }
+
+    .energy-bar {
+      width: 100%;
+      height: 12px;
+      background: #333;
+      border-radius: 6px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .energy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ffaa, #00aaff);
+      width: 100%;
+      transition: width 0.1s;
     }
 
     button {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 215, 0, 0.3);
+      background: rgba(0, 30, 60, 0.8);
+      border: 1px solid #22aaff;
       border-radius: 40px;
-      padding: 10px 16px;
+      padding: 8px 14px;
       color: white;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 14px;
       backdrop-filter: blur(5px);
       transition: 0.1s;
       cursor: pointer;
+      box-shadow: 0 0 10px #22aaff66;
+      margin: 4px;
     }
     button:active {
       transform: scale(0.94);
-      background: rgba(255, 215, 0, 0.3);
-      box-shadow: 0 0 20px gold;
+      background: #2266aa;
     }
     button:disabled {
       opacity: 0.3;
@@ -114,12 +240,13 @@
 
     .controls {
       display: flex;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
       justify-content: center;
-      margin-top: 16px;
+      margin-top: 12px;
     }
 
-    /* ========== ПК панели (слева) ========== */
+    /* ----- ПК панели слева ----- */
     .desktop-panels {
       position: absolute;
       top: 20px;
@@ -136,14 +263,14 @@
     .desktop-panel > button {
       width: 100%;
       text-align: left;
-      background: rgba(20,40,70,0.7);
+      background: rgba(20, 40, 70, 0.9);
     }
     .panel-content {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.4s;
       margin-top: 8px;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 20, 40, 0.9);
       border-radius: 24px;
     }
     .panel-content.open {
@@ -151,7 +278,7 @@
       overflow-y: auto;
     }
 
-    /* ----- ПК фон для предметов (перетаскивание) ----- */
+    /* ----- ПК фон для предметов ----- */
     .bg-items {
       position: absolute;
       inset: 0;
@@ -182,7 +309,7 @@
     }
     .mobile-header button {
       flex: 1;
-      background: rgba(10,20,40,0.8);
+      background: rgba(10, 20, 40, 0.9);
       backdrop-filter: blur(10px);
       border-radius: 30px;
       padding: 12px 0;
@@ -198,19 +325,19 @@
       overflow: hidden;
       transition: max-height 0.4s ease;
       z-index: 19;
-      background: rgba(0,5,15,0.9);
+      background: rgba(0, 5, 15, 0.95);
       backdrop-filter: blur(16px);
       border-radius: 32px;
     }
     .mobile-panel.open {
-      max-height: 80vh;           /* УВЕЛИЧЕНО для иллюминатора */
+      max-height: 80vh;
       overflow-y: auto;
     }
 
-    /* ----- ИЛЛЮМИНАТОР (круглый, большой) ----- */
+    /* ----- ИЛЛЮМИНАТОР ----- */
     #illuminator-viewport {
       width: 100%;
-      height: 80vh;                /* УВЕЛИЧЕНО ВДВОЕ (было 60vh) */
+      height: 80vh;
       overflow: hidden;
       position: relative;
       background: #010314;
@@ -219,7 +346,6 @@
       margin: 0 auto;
       box-shadow: 0 0 30px rgba(0,200,255,0.3);
     }
-    /* канвас со звёздами (под предметами) */
     #illuminator-stars-canvas {
       position: absolute;
       top: 0;
@@ -250,12 +376,48 @@
       animation: float 5s infinite;
       touch-action: none;
     }
+
     @keyframes float {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-8px); }
     }
 
-    /* всплывающее число при клике */
+    /* падающие астероиды */
+    .falling-asteroid {
+      position: fixed;
+      width: 50px;
+      height: 50px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="%23aa8866"><circle cx="50" cy="50" r="40" fill="%238b5a2b"/><circle cx="30" cy="30" r="8" fill="%23cd7f32"/><circle cx="70" cy="60" r="12" fill="%23b87333"/><circle cx="20" cy="70" r="6" fill="%239c7c3b"/></svg>') center/contain no-repeat;
+      pointer-events: auto;
+      cursor: pointer;
+      z-index: 100;
+      filter: drop-shadow(0 0 8px orange);
+      animation: fall linear forwards;
+    }
+    .golden-asteroid {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="%23ffd700"><circle cx="50" cy="50" r="40" fill="%23ffd700"/><circle cx="30" cy="30" r="8" fill="%23f0e68c"/><circle cx="70" cy="60" r="12" fill="%23ffaa00"/><circle cx="20" cy="70" r="6" fill="%23ffff00"/></svg>') center/contain no-repeat;
+    }
+
+    @keyframes fall {
+      to { top: 110vh; }
+    }
+
+    /* бонусный индикатор */
+    .boost-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #ffaa33;
+      color: #1a1f2e;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-weight: bold;
+      box-shadow: 0 0 20px gold;
+      z-index: 200;
+      display: none;
+    }
+
+    /* всплывающее число */
     .floating-number {
       position: fixed;
       font-size: 32px;
@@ -271,19 +433,28 @@
       100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
     }
 
-    /* общие предметы */
-    .item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    /* сообщения о событиях */
+    .event-message {
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2288ff;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-weight: bold;
+      z-index: 300;
+      animation: fadeOut 3s forwards;
+      box-shadow: 0 0 30px cyan;
     }
-    .item img {
-      width: 44px; height: 44px; border-radius: 16px;
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; }
     }
 
-    /* адаптация: скрываем ненужное */
+    /* адаптация */
     @media (max-width: 768px) {
       #starsPc { display: none; }
       .desktop-panels { display: none; }
@@ -291,233 +462,243 @@
     @media (min-width: 769px) {
       .mobile-header, .mobile-panel { display: none; }
     }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .item img {
+      width: 44px; height: 44px; border-radius: 16px; object-fit: cover;
+    }
+    .research-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #335;
+    }
   </style>
 </head>
 <body>
 
-<!-- ===== ЗВЁЗДЫ ПК ===== -->
 <canvas id="starsPc"></canvas>
 
-<!-- ===== ПК ПАНЕЛИ (магазин, музыка) ===== -->
+<!-- Элементы корабля (вставляем через JS) -->
+<div class="game" id="gameRocket">
+  <div class="window-left"></div>
+  <div class="window-right"></div>
+  <div class="wing-left"></div>
+  <div class="wing-right"></div>
+  <div class="engine"></div>
+  <div class="antenna"></div>
+
+  <h2><i class="fas fa-rocket"></i> SPACE MINING</h2>
+  <div class="stats">
+    <span><i class="fas fa-gem"></i> <span id="score">0</span></span>
+    <span><i class="fas fa-bolt"></i> x<span id="power">1</span></span>
+    <span><i class="fas fa-robot"></i> <span id="auto">0</span></span>
+  </div>
+  <div class="stats">
+    <span><i class="fas fa-battery-full"></i> <span id="energy">100</span>/<span id="maxEnergy">100</span></span>
+    <span><i class="fas fa-star"></i> престиж <span id="prestige">0</span></span>
+  </div>
+  <div class="energy-bar">
+    <div class="energy-fill" id="energyBar" style="width:100%"></div>
+  </div>
+
+  <button class="click-btn" id="click">КЛИК</button>
+
+  <div style="display: flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+    <button id="upgrade"><i class="fas fa-arrow-up"></i> БУР ×2 (<span id="upPrice">100</span>)</button>
+    <button id="autoUp"><i class="fas fa-cogs"></i> АВТОДРОН (<span id="autoPrice">500</span>)</button>
+  </div>
+  <div style="margin-top:5px;">
+    <button id="prestigeBtn" disabled><i class="fas fa-sync-alt"></i> ПРЕСТИЖ (нужно 500k)</button>
+  </div>
+
+  <div class="controls">
+    <button id="saveBtn"><i class="fas fa-save"></i></button>
+    <button id="loadBtn"><i class="fas fa-folder-open"></i></button>
+    <button id="resetBtn"><i class="fas fa-redo-alt"></i></button>
+  </div>
+</div>
+
+<!-- ПК панели -->
 <div class="desktop-panels">
   <div class="desktop-panel glass">
-    <button id="toggleShopDesktop">🛒 МАГАЗИН ПРЕДМЕТОВ</button>
+    <button id="toggleShopDesktop"><i class="fas fa-store"></i> МАГАЗИН МИНЕРАЛОВ</button>
     <div class="panel-content glass" id="shopDesktop"></div>
   </div>
   <div class="desktop-panel glass">
-    <button id="toggleMusicDesktop">🎵 МУЗЫКА (10 треков)</button>
+    <button id="toggleResearchDesktop"><i class="fas fa-flask"></i> ИССЛЕДОВАНИЯ</button>
+    <div class="panel-content glass" id="researchDesktop"></div>
+  </div>
+  <div class="desktop-panel glass">
+    <button id="toggleMusicDesktop"><i class="fas fa-music"></i> МУЗЫКА (20 треков)</button>
     <div class="panel-content glass" id="musicDesktop"></div>
   </div>
 </div>
 
-<!-- ===== МОБИЛЬНЫЙ ХЕДЕР ===== -->
+<!-- Мобильный хедер -->
 <div class="mobile-header">
-  <button id="mobileShopBtn">🛒</button>
-  <button id="mobileMusicBtn">🎵</button>
-  <button id="mobileIlluminatorBtn">🔮 ИЛЛЮМИНАТОР</button>
+  <button id="mobileShopBtn"><i class="fas fa-store"></i></button>
+  <button id="mobileResearchBtn"><i class="fas fa-flask"></i></button>
+  <button id="mobileMusicBtn"><i class="fas fa-music"></i></button>
+  <button id="mobileIlluminatorBtn"><i class="fas fa-globe"></i></button>
 </div>
 
-<!-- ===== МОБИЛЬНЫЕ ПАНЕЛИ ===== -->
-<div class="mobile-panel glass" id="mobileShopPanel">
-  <div style="padding:12px;" id="shopMobile"></div>
-</div>
-<div class="mobile-panel glass" id="mobileMusicPanel">
-  <div style="padding:12px; display: flex; flex-wrap: wrap; gap:6px;" id="musicMobile">
-    <!-- будут заполнены кнопки -->
-  </div>
-</div>
+<!-- Мобильные панели -->
+<div class="mobile-panel glass" id="mobileShopPanel"><div style="padding:12px;" id="shopMobile"></div></div>
+<div class="mobile-panel glass" id="mobileResearchPanel"><div style="padding:12px;" id="researchMobile"></div></div>
+<div class="mobile-panel glass" id="mobileMusicPanel"><div style="padding:12px;" id="musicMobile"></div></div>
 <div class="mobile-panel glass" id="mobileIlluminatorPanel">
   <div style="padding:10px;">
     <div id="illuminator-viewport">
       <canvas id="illuminator-stars-canvas"></canvas>
       <div id="illuminator-content"></div>
     </div>
-    <p style="text-align:center; margin:6px 0;">👆 двумя пальцами zoom / pan</p>
+    <p><i class="fas fa-finger"></i> двумя пальцами zoom/pan</p>
   </div>
 </div>
 
-<!-- ===== ФОН ПК ДЛЯ ПРЕДМЕТОВ ===== -->
+<!-- Фон для предметов ПК -->
 <div class="bg-items" id="bgPcItems"></div>
 
-<!-- ===== ОСНОВНОЙ ИГРОВОЙ БЛОК (ЦЕНТР) ===== -->
-<div class="game glass">
-  <h2 style="margin:0 0 12px;">⚡ ASTRO CLICKER</h2>
-  <div class="stats">
-    <span>✨ <span id="score">0</span></span>
-    <span>💥 x<span id="power">1</span></span>
-    <span>🤖 <span id="auto">0</span></span>
-  </div>
-
-  <button class="click-btn" id="click">КЛИК</button>
-
-  <button id="upgrade">🔥 УСИЛИТЬ ×2  (<span id="upPrice">100</span>)</button>
-  <button id="autoUp">⚙️ АВТОКЛИКЕР (<span id="autoPrice">500</span>)</button>
-
-  <div class="controls">
-    <button id="saveBtn">💾 СОХР</button>
-    <button id="loadBtn">📂 ЗАГР</button>
-    <button id="resetBtn">🔄 СБРОС</button>
-  </div>
-</div>
+<!-- индикатор ускорения -->
+<div class="boost-indicator" id="boostIndicator"><i class="fas fa-bolt"></i> x10 УСКОРЕНИЕ</div>
 
 <script>
 (function() {
-  // --------------------------------------------------------------
-  // 1. Глобальные переменные
-  // --------------------------------------------------------------
-  let score = 0;
+  // ================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==================
+  let score = 1000; // начальный капитал
   let power = 1;
   let auto = 0;
   let upPrice = 100;
   let autoPrice = 500;
-  let owned = {};          // id -> img url
-  let pcItemPos = {};      // координаты на ПК фоне
-  let mobItemPos = {};     // координаты внутри illuminator-content (абсолютные, без масштаба)
+
+  // Энергия
+  let energy = 100;
+  let maxEnergy = 100;
+  let energyRegen = 1; // в секунду
+
+  // Престиж
+  let prestige = 0;
+  let prestigeMultiplier = 1; // 1 + prestige * 0.05
+  const PRESTIGE_THRESHOLD = 500000;
+
+  // Исследования (8 штук)
+  const research = [
+    { id: 'power1', name: 'Мощный бур', desc: 'Увеличивает силу клика на 1', max: 5, level: 0, baseCost: 500 },
+    { id: 'auto1', name: 'Автоматизация', desc: '+1 автокликер', max: 5, level: 0, baseCost: 800 },
+    { id: 'energy1', name: 'Энергоэффективность', desc: 'Шанс не тратить энергию +5%', max: 5, level: 0, baseCost: 400 },
+    { id: 'regen1', name: 'Регенерация', desc: '+0.2 энергии/сек', max: 5, level: 0, baseCost: 300 },
+    { id: 'crit1', name: 'Критический удар', desc: 'Шанс двойной добычи 5%', max: 5, level: 0, baseCost: 600 },
+    { id: 'luck1', name: 'Везучий шахтёр', desc: 'Шанс редкого минерала +2%', max: 5, level: 0, baseCost: 700 },
+    { id: 'maxEnergy1', name: 'Накопители', desc: '+20 макс. энергии', max: 5, level: 0, baseCost: 500 },
+    { id: 'asteroid1', name: 'Астероидный магнат', desc: 'Увеличивает награду с астероидов на 20%', max: 5, level: 0, baseCost: 900 }
+  ];
+
+  let owned = {}; // предметы из магазина
+  let pcItemPos = {};
+  let mobItemPos = {};
+
+  // Буст
+  let boostMultiplier = 1;
+  let boostEndTime = 0;
 
   const isMobile = window.innerWidth <= 768;
 
-  // элементы
+  // Элементы
   const scoreEl = document.getElementById('score');
   const powerEl = document.getElementById('power');
   const autoEl = document.getElementById('auto');
   const upPriceSpan = document.getElementById('upPrice');
   const autoPriceSpan = document.getElementById('autoPrice');
+  const energySpan = document.getElementById('energy');
+  const maxEnergySpan = document.getElementById('maxEnergy');
+  const energyBar = document.getElementById('energyBar');
+  const prestigeSpan = document.getElementById('prestige');
+  const prestigeBtn = document.getElementById('prestigeBtn');
 
   function updateStats() {
+    let effPower = power * boostMultiplier * prestigeMultiplier;
     scoreEl.textContent = Math.floor(score);
-    powerEl.textContent = power;
+    powerEl.textContent = effPower;
     autoEl.textContent = auto;
     upPriceSpan.textContent = upPrice;
     autoPriceSpan.textContent = autoPrice;
+    energySpan.textContent = Math.floor(energy);
+    maxEnergySpan.textContent = maxEnergy;
+    energyBar.style.width = (energy / maxEnergy * 100) + '%';
+    prestigeSpan.textContent = prestige;
+    prestigeBtn.disabled = score < PRESTIGE_THRESHOLD;
   }
   updateStats();
 
-  // --------------------------------------------------------------
-  // 2. Генерация предметов (50 штук) с космическими иконками
-  // --------------------------------------------------------------
-  function createCosmicIcon(name, index) {
-    const hue = (index * 47) % 360;
-    const isPlanet = index % 3 !== 0; // чередуем планеты и звёзды
-    const secondHue = (hue + 60) % 360;
-
-    if (isPlanet) {
-      // планета с кольцом
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <defs>
-            <radialGradient id="grad${index}" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-              <stop offset="0%" stop-color="hsl(${hue}, 90%, 75%)" />
-              <stop offset="100%" stop-color="hsl(${hue}, 90%, 40%)" />
-            </radialGradient>
-          </defs>
-          <circle cx="50" cy="50" r="40" fill="url(#grad${index})" stroke="white" stroke-width="2" />
-          <ellipse cx="50" cy="55" rx="45" ry="15" fill="none" stroke="hsl(${secondHue}, 80%, 70%)" stroke-width="3" stroke-dasharray="4 3" />
-          <circle cx="70" cy="30" r="5" fill="white" opacity="0.8" />
-          <circle cx="20" cy="70" r="3" fill="white" opacity="0.6" />
-          <circle cx="80" cy="75" r="4" fill="white" opacity="0.7" />
-        </svg>
-      `;
-      return 'data:image/svg+xml,' + encodeURIComponent(svg);
-    } else {
-      // звезда
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <defs>
-            <radialGradient id="starGrad${index}" cx="50%" cy="50%" r="50%" fx="40%" fy="40%">
-              <stop offset="0%" stop-color="hsl(${hue}, 100%, 80%)" />
-              <stop offset="100%" stop-color="hsl(${hue}, 100%, 50%)" />
-            </radialGradient>
-          </defs>
-          <circle cx="50" cy="50" r="35" fill="url(#starGrad${index})" />
-          <polygon points="50,10 61,40 95,40 68,57 82,90 50,72 18,90 32,57 5,40 39,40" fill="white" opacity="0.9" />
-          <circle cx="50" cy="50" r="12" fill="hsl(${hue}, 100%, 90%)" />
-        </svg>
-      `;
-      return 'data:image/svg+xml,' + encodeURIComponent(svg);
-    }
-  }
-
-  const itemNames = [
-    "Красная галактика", "Синяя туманность", "Золотая звезда", "Ледяная планета", "Огненный шар",
-    "Спутник Сатурна", "Пояс астероидов", "Чёрная дыра", "Пульсар", "Квазар",
-    "Млечный путь", "Андромеда", "Магелланово облако", "Солнце", "Альфа Центавра",
-    "Полярная звезда", "Сириус", "Вега", "Антарес", "Бетельгейзе",
-    "Комета Галлея", "Пояс Койпера", "Облако Оорта", "Церера", "Плутон",
-    "Европа", "Ганимед", "Титан", "Энцелад", "Ио",
-    "Марс", "Венера", "Меркурий", "Юпитер", "Сатурн",
-    "Уран", "Нептун", "Кеплер-22b", "TRAPPIST-1e", "Проксима b",
-    "Тау Кита e", "Глизе 581g", "HD 189733b", "WASP-12b", "TrES-2b",
-    "Kepler-186f", "Kepler-452b", "Luyten b", "Росс 128 b", "Тессера"
+  // ================== МАГАЗИН С РЕАЛЬНЫМИ ФОТО ==================
+  const itemImages = [
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Ceres_-_RC3_-_Haulani_Crater_%2822381131621%29.jpg/1024px-Ceres_-_RC3_-_Haulani_Crater_%2822381131621%29.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Vesta_full_mosaic.jpg/1024px-Vesta_full_mosaic.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Eros_-_PIA02923_%28color%29.jpg/1024px-Eros_-_PIA02923_%28color%29.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Itokawa.jpg/1024px-Itokawa.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Ryugu_close_up.jpg/1024px-Ryugu_close_up.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Bennu_OSIRIS-REx.jpg/1024px-Bennu_OSIRIS-REx.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Murchison_meteorite.jpg/1024px-Murchison_meteorite.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Iron_meteorite,_Ethiopia.jpg/1024px-Iron_meteorite,_Ethiopia.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Lunar_meteorite_%28cropped%29.jpg/1024px-Lunar_meteorite_%28cropped%29.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Gold_%281%29.jpg/1024px-Gold_%281%29.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Platinum_nugget.jpg/1024px-Platinum_nugget.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Diamond_Cut-2.jpg/1024px-Diamond_Cut-2.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Ruby_cristal.jpg/1024px-Ruby_cristal.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Emerald_rough.jpg/1024px-Emerald_rough.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Sapphire_%28Brasil%29.jpg/1024px-Sapphire_%28Brasil%29.jpg'
   ];
 
-  const items = [...Array(50)].map((_, i) => ({
+  const items = [...Array(20)].map((_, i) => ({
     id: 'item' + i,
-    name: itemNames[i],
-    price: Math.floor(800 * Math.pow(1.25, i)),
-    img: createCosmicIcon(itemNames[i], i)
+    name: `Астероид-${i+1}`,
+    price: Math.floor(800 * Math.pow(1.3, i)),
+    img: itemImages[i % itemImages.length]
   }));
 
-  // --------------------------------------------------------------
-  // 3. Звуки / Музыка (10 треков + ИНТЕРСТЕЛЛАР)
-  // --------------------------------------------------------------
+  // ================== МУЗЫКА: 20 КОСМИЧЕСКИХ МЕЛОДИЙ ==================
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   const ac = new AudioContext();
   let musicInterval = null;
-  let currentMelody = 0; // 0 = off
+  let currentMelody = 0; // 0 = выкл
 
-  function playNotes(notes, duration = 1.2, type = 'sine', baseTime = 0.3) {
-    const now = ac.currentTime;
-    notes.forEach((freq, idx) => {
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.type = type;
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.03, now + idx * baseTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * baseTime + duration);
-      osc.connect(gain).connect(ac.destination);
-      osc.start(now + idx * baseTime);
-      osc.stop(now + idx * baseTime + duration);
-    });
+  // Генерация 20 разных паттернов (короткие, но в цикле)
+  function createMelody(index) {
+    return function() {
+      const now = ac.currentTime;
+      const baseFreq = 200 + index * 30;
+      const type = index % 3 === 0 ? 'sine' : (index % 3 === 1 ? 'triangle' : 'square');
+      const notes = [];
+      // Создаём последовательность из 6-10 нот
+      for (let i = 0; i < 8 + (index % 5); i++) {
+        notes.push(baseFreq * (1 + (i * 0.1)));
+      }
+      notes.forEach((freq, idx) => {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.05, now + idx * 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.35 + 0.8);
+        osc.connect(gain).connect(ac.destination);
+        osc.start(now + idx * 0.35);
+        osc.stop(now + idx * 0.35 + 1.0);
+      });
+    };
   }
 
-  const m1 = () => playNotes([261.63, 329.63, 392.00, 523.25], 1.0, 'sine', 0.25);
-  const m2 = () => playNotes([220, 174.61, 261.63, 329.63], 1.5, 'triangle', 0.35);
-  const m3 = () => playNotes([110, 146.83, 220, 293.66], 2.0, 'sawtooth', 0.5);
-  const m4 = () => playNotes([440, 554.37, 659.25, 880], 1.2, 'square', 0.2);
-  const m5 = () => playNotes([392, 493.88, 587.33, 698.46], 1.1, 'sine', 0.3);
-  const m6 = () => playNotes([82.41, 110, 146.83, 196], 2.0, 'triangle', 0.6);
-  const m7 = () => playNotes([1046.5, 1318.5, 1568, 2093], 1.8, 'sine', 0.15);
-  const m8 = () => playNotes([155.56, 207.65, 311.13, 415.30], 1.7, 'sawtooth', 0.4);
-  const m9 = () => playNotes([330, 415, 523, 659], 1.4, 'square', 0.28);
-  function playInterstellar() {
-    const now = ac.currentTime;
-    const bass = [110, 130.81, 146.83, 164.81]; 
-    for (let i = 0; i < 8; i++) {
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = bass[i % 4] * 0.5;
-      gain.gain.setValueAtTime(0.1, now + i * 1.2);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 1.2 + 1.0);
-      osc.connect(gain).connect(ac.destination);
-      osc.start(now + i * 1.2);
-      osc.stop(now + i * 1.2 + 1.2);
-    }
-    const melody = [880, 783.99, 659.25, 587.33, 523.25, 587.33, 659.25]; 
-    melody.forEach((f, j) => {
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = f;
-      gain.gain.setValueAtTime(0.06, now + 0.5 + j * 0.9);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5 + j * 0.9 + 1.3);
-      osc.connect(gain).connect(ac.destination);
-      osc.start(now + 0.5 + j * 0.9);
-      osc.stop(now + 0.5 + j * 0.9 + 1.5);
-    });
+  const melodies = [null];
+  for (let i = 1; i <= 20; i++) {
+    melodies.push(createMelody(i));
   }
-
-  const melodies = [null, m1, m2, m3, m4, m5, m6, m7, m8, m9, playInterstellar];
 
   function startMusic() {
     if (musicInterval) clearInterval(musicInterval);
@@ -525,37 +706,30 @@
     melodies[currentMelody]();
     musicInterval = setInterval(() => {
       if (currentMelody && melodies[currentMelody]) melodies[currentMelody]();
-    }, 5500);
+    }, 6000); // повтор каждые 6 сек
   }
 
   function changeMelody(index) {
     currentMelody = index;
-    if (musicInterval) {
-      clearInterval(musicInterval);
-      musicInterval = null;
-    }
+    if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
     if (index !== 0) startMusic();
   }
 
-  // ----- новый приятный звук клика (две ноты) -----
   function clickSound() {
     const now = ac.currentTime;
-    // основной тон
     const osc1 = ac.createOscillator();
     const gain1 = ac.createGain();
     osc1.type = 'sine';
-    osc1.frequency.value = 659.25; // ми
+    osc1.frequency.value = 659.25;
     gain1.gain.setValueAtTime(0.1, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
     osc1.connect(gain1).connect(ac.destination);
     osc1.start(now);
     osc1.stop(now + 0.15);
-
-    // второй тон чуть позже
     const osc2 = ac.createOscillator();
     const gain2 = ac.createGain();
     osc2.type = 'sine';
-    osc2.frequency.value = 880; // ля
+    osc2.frequency.value = 880;
     gain2.gain.setValueAtTime(0.07, now + 0.03);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
     osc2.connect(gain2).connect(ac.destination);
@@ -563,23 +737,15 @@
     osc2.stop(now + 0.18);
   }
 
-  // --------------------------------------------------------------
-  // 4. Звёздный фон ПК (анимация)
-  // --------------------------------------------------------------
+  // ================== ЗВЁЗДНЫЙ ФОН ПК ==================
   const canvasPc = document.getElementById('starsPc');
   if (canvasPc) {
     const ctxPc = canvasPc.getContext('2d');
     let w, h;
-    function resizePc() {
-      w = window.innerWidth;
-      h = window.innerHeight;
-      canvasPc.width = w; canvasPc.height = h;
-    }
+    function resizePc() { w = window.innerWidth; h = window.innerHeight; canvasPc.width = w; canvasPc.height = h; }
     resizePc();
     window.addEventListener('resize', resizePc);
-    const starsPc = [...Array(3000)].map(() => ({
-      x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.8
-    }));
+    let starsPc = [...Array(3000)].map(() => ({ x: Math.random() * w, y: Math.random() * h, s: Math.random() * 1.8 }));
     function drawPcStars() {
       if (!ctxPc) return;
       ctxPc.clearRect(0, 0, w, h);
@@ -587,7 +753,8 @@
       starsPc.forEach(s => {
         ctxPc.globalAlpha = 0.7 + Math.random() * 0.3;
         ctxPc.fillRect(s.x, s.y, s.s, s.s);
-        s.y += s.s * 0.2;
+        let speedFactor = boostMultiplier > 1 ? 2 : 1;
+        s.y += s.s * 0.2 * speedFactor;
         if (s.y > h) s.y = 0;
       });
       requestAnimationFrame(drawPcStars);
@@ -595,92 +762,39 @@
     drawPcStars();
   }
 
-  // --------------------------------------------------------------
-  // 5. Звёзды для иллюминатора (мировые координаты)
-  // --------------------------------------------------------------
+  // ================== ИЛЛЮМИНАТОР ==================
   const illCanvas = document.getElementById('illuminator-stars-canvas');
   const illCtx = illCanvas ? illCanvas.getContext('2d') : null;
   let worldStars = [];
-  const WORLD_SIZE = 4000; // мир от -2000 до 2000
-
+  const WORLD_SIZE = 4000;
   if (illCanvas) {
-    // инициализация звёзд в мировом пространстве
     for (let i = 0; i < 2000; i++) {
-      worldStars.push({
-        x: (Math.random() - 0.5) * WORLD_SIZE,
-        y: (Math.random() - 0.5) * WORLD_SIZE,
-        speed: 0.1 + Math.random() * 0.3,
-        size: Math.random() * 1.5 + 0.5
-      });
+      worldStars.push({ x: (Math.random() - 0.5) * WORLD_SIZE, y: (Math.random() - 0.5) * WORLD_SIZE, speed: 0.1 + Math.random() * 0.3, size: Math.random() * 1.5 + 0.5 });
     }
-
-    // параметры трансформации (обновляются из touch-событий)
     let scale = 1, translateX = 0, translateY = 0;
-
-    // функция перерисовки звёзд с учётом текущей трансформации
     function drawIllStars() {
       if (!illCtx || !illCanvas) return;
-      const w = illCanvas.width;
-      const h = illCanvas.height;
+      const w = illCanvas.width; const h = illCanvas.height;
       illCtx.clearRect(0, 0, w, h);
       illCtx.fillStyle = 'white';
-
       worldStars.forEach(star => {
-        // мировые координаты -> экранные
         const screenX = translateX + star.x * scale;
         const screenY = translateY + star.y * scale;
-        // проверка видимости (с небольшим запасом)
         if (screenX > -10 && screenX < w + 10 && screenY > -10 && screenY < h + 10) {
           illCtx.globalAlpha = 0.6 + Math.random() * 0.3;
           illCtx.fillRect(screenX, screenY, star.size, star.size);
         }
-        // медленное движение звёзд (для эффекта)
-        star.y += star.speed * 0.5;
+        let speedFactor = boostMultiplier > 1 ? 3 : 1;
+        star.y += star.speed * 0.5 * speedFactor;
         if (star.y > WORLD_SIZE/2) star.y = -WORLD_SIZE/2;
       });
       requestAnimationFrame(drawIllStars);
     }
     drawIllStars();
-
-    // экспорт параметров для использования в touch-обработчиках
-    window.illuminatorTransform = {
-      set: (s, tx, ty) => { scale = s; translateX = tx; translateY = ty; }
-    };
+    window.illuminatorTransform = { set: (s, tx, ty) => { scale = s; translateX = tx; translateY = ty; } };
   }
 
-  // --------------------------------------------------------------
-  // 6. Рендер магазина
-  // --------------------------------------------------------------
-  function renderShop(container) {
-    if (!container) return;
-    container.innerHTML = '';
-    items.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'item';
-      const bought = owned.hasOwnProperty(item.id);
-      div.innerHTML = `
-        <img src="${item.img}">
-        <div style="flex:1"><strong>${item.name}</strong><br>${bought ? '✅' : '💰 '+item.price}</div>
-        <button ${bought ? 'disabled' : ''}>купить</button>
-      `;
-      const btn = div.querySelector('button');
-      if (!bought) {
-        btn.onclick = () => {
-          if (score >= item.price) {
-            score -= item.price;
-            owned[item.id] = item.img;
-            addItemToWorld(item.id, item.img);
-            updateStats();
-            renderShop(document.getElementById('shopDesktop'));
-            renderShop(document.getElementById('shopMobile'));
-          }
-        };
-      }
-      container.appendChild(div);
-    });
-  }
-
-  // Добавление предмета в мир
+  // ================== ФУНКЦИИ ДОБАВЛЕНИЯ ПРЕДМЕТОВ (ПОЛНАЯ ВЕРСИЯ) ==================
   function addItemToWorld(id, imgSrc) {
     if (isMobile) {
       const content = document.getElementById('illuminator-content');
@@ -690,30 +804,24 @@
       img.className = 'illuminator-item';
       img.dataset.id = id;
 
-      // ---- ИЗМЕНЕНО: появление по центру текущего видимого окна ----
       const viewport = document.getElementById('illuminator-viewport');
       const vpW = viewport.clientWidth;
       const vpH = viewport.clientHeight;
-      // центр viewport в экранных координатах
       const screenCenterX = vpW / 2;
       const screenCenterY = vpH / 2;
-      // текущие параметры трансформации (берём из глобальных переменных, которые обновляются в touch-событиях)
       const scale = window.currentScale !== undefined ? window.currentScale : 1;
       const transX = window.currentTranslateX !== undefined ? window.currentTranslateX : 0;
       const transY = window.currentTranslateY !== undefined ? window.currentTranslateY : 0;
-      // переводим в координаты контента
-      const contentX = (screenCenterX - transX) / scale - 32; // 32 = половина ширины предмета
+      const contentX = (screenCenterX - transX) / scale - 32;
       const contentY = (screenCenterY - transY) / scale - 32;
 
       let x = contentX, y = contentY;
-      // если координаты уже сохранены ранее, используем их (приоритет сохранённых)
       if (mobItemPos[id]) {
         x = mobItemPos[id].x;
         y = mobItemPos[id].y;
       } else {
         mobItemPos[id] = { x, y };
       }
-      // ограничивать не будем, пусть ставится ровно по центру даже за краем
       img.style.left = x + 'px';
       img.style.top = y + 'px';
       makeDraggableInIlluminator(img, id);
@@ -740,7 +848,7 @@
     }
   }
 
-  // Перетаскивание на ПК (мышь)
+  // Перетаскивание на ПК
   function makeDraggableOnPc(el, id) {
     let dx, dy;
     el.onmousedown = (e) => {
@@ -756,7 +864,6 @@
     };
   }
 
-  // Перетаскивание внутри иллюминатора (мышь + touch)
   function makeDraggableInIlluminator(el, id) {
     let startX, startY, startLeft, startTop;
     const content = document.getElementById('illuminator-content');
@@ -774,7 +881,6 @@
       const dy = (clientY - startY) / scale;
       let newX = startLeft + dx;
       let newY = startTop + dy;
-      // границы
       newX = Math.max(0, Math.min(content.clientWidth - el.clientWidth, newX));
       newY = Math.max(0, Math.min(content.clientHeight - el.clientHeight, newY));
       el.style.left = newX + 'px';
@@ -782,7 +888,6 @@
       mobItemPos[id] = { x: newX, y: newY };
     }
 
-    // мышь
     el.onmousedown = (e) => {
       e.preventDefault();
       dragStart(e.clientX, e.clientY);
@@ -790,30 +895,24 @@
       document.onmouseup = () => { document.onmousemove = null; };
     };
 
-    // touch
     el.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      e.stopPropagation(); // <-- ИСПРАВЛЕНО: не даём событию уйти к viewport
+      e.stopPropagation();
       const touch = e.touches[0];
       dragStart(touch.clientX, touch.clientY);
     }, { passive: false });
 
     el.addEventListener('touchmove', (e) => {
       e.preventDefault();
-      e.stopPropagation(); // <-- ИСПРАВЛЕНО: не даём событию уйти к viewport
+      e.stopPropagation();
       const touch = e.touches[0];
       dragMove(touch.clientX, touch.clientY);
     }, { passive: false });
 
-    el.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      // ничего не делаем
-    });
+    el.addEventListener('touchend', (e) => { e.preventDefault(); });
   }
 
-  // --------------------------------------------------------------
-  // 7. ЗУМ/ПАН для иллюминатора
-  // --------------------------------------------------------------
+  // ================== ЗУМ/ПАН ДЛЯ ИЛЛЮМИНАТОРА ==================
   const viewport = document.getElementById('illuminator-viewport');
   const content = document.getElementById('illuminator-content');
   if (viewport && content) {
@@ -824,10 +923,7 @@
     viewport.addEventListener('touchstart', (e) => {
       e.preventDefault();
       if (e.touches.length === 2) {
-        startDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+        startDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         startScale = scale;
       } else if (e.touches.length === 1) {
         startPan = { x: e.touches[0].clientX - translateX, y: e.touches[0].clientY - translateY };
@@ -837,10 +933,7 @@
     viewport.addEventListener('touchmove', (e) => {
       e.preventDefault();
       if (e.touches.length === 2) {
-        const dist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         scale = Math.min(3, Math.max(0.8, startScale * (dist / startDistance)));
         applyTransform();
       } else if (e.touches.length === 1) {
@@ -852,171 +945,298 @@
 
     function applyTransform() {
       content.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-      // передаём параметры в звёздный канвас
-      if (window.illuminatorTransform) {
-        window.illuminatorTransform.set(scale, translateX, translateY);
-      }
-      // также запоминаем для перетаскивания и появления новых предметов
+      if (window.illuminatorTransform) window.illuminatorTransform.set(scale, translateX, translateY);
       window.currentScale = scale;
       window.currentTranslateX = translateX;
       window.currentTranslateY = translateY;
     }
-
-    // инициализация
-    window.currentScale = 1;
-    window.currentTranslateX = 0;
-    window.currentTranslateY = 0;
+    window.currentScale = 1; window.currentTranslateX = 0; window.currentTranslateY = 0;
   }
 
-  // --------------------------------------------------------------
-  // 8. Всплывающее число при клике
-  // --------------------------------------------------------------
-  function showFloatingNumber(x, y, value) {
-    const div = document.createElement('div');
-    div.className = 'floating-number';
-    div.textContent = `+${value}`;
-    div.style.left = (x - 20) + 'px';
-    div.style.top = (y - 20) + 'px';
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 1000);
+  // ================== РЕНДЕР МАГАЗИНА ==================
+  function renderShop(container) {
+    if (!container) return;
+    container.innerHTML = '';
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      const bought = owned.hasOwnProperty(item.id);
+      div.innerHTML = `<img src="${item.img}"><div style="flex:1"><strong>${item.name}</strong><br>${bought ? '✅' : '💰 '+item.price}</div><button ${bought ? 'disabled' : ''}>купить</button>`;
+      const btn = div.querySelector('button');
+      if (!bought) {
+        btn.onclick = () => {
+          if (score >= item.price) {
+            score -= item.price;
+            owned[item.id] = item.img;
+            addItemToWorld(item.id, item.img);
+            updateStats();
+            renderShop(document.getElementById('shopDesktop'));
+            renderShop(document.getElementById('shopMobile'));
+          }
+        };
+      }
+      container.appendChild(div);
+    });
   }
 
-  // --------------------------------------------------------------
-  // 9. Обработчики кликов, авто, кнопки
-  // --------------------------------------------------------------
-  document.getElementById('click').onclick = (e) => {
-    ac.resume();
-    clickSound();
-    score += power;
-    updateStats();
-    showFloatingNumber(e.clientX, e.clientY, power);
-  };
+  // ================== РЕНДЕР ИССЛЕДОВАНИЙ ==================
+  function renderResearch(container) {
+    if (!container) return;
+    container.innerHTML = '';
+    research.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'research-item';
+      let cost = Math.floor(r.baseCost * Math.pow(1.5, r.level));
+      div.innerHTML = `<div><strong>${r.name} (ур. ${r.level}/${r.max})</strong><br><small>${r.desc}</small></div><div><button ${r.level >= r.max ? 'disabled' : ''}>улучшить ${cost}</button></div>`;
+      const btn = div.querySelector('button');
+      if (r.level < r.max) {
+        btn.onclick = () => {
+          if (score >= cost) {
+            score -= cost;
+            r.level++;
+            if (r.id === 'power1') power += 1;
+            else if (r.id === 'auto1') auto += 1;
+            else if (r.id === 'regen1') energyRegen += 0.2;
+            else if (r.id === 'maxEnergy1') { maxEnergy += 20; energy += 20; }
+            // остальные эффекты уже учтены в других местах
+            updateStats();
+            renderResearch(container);
+          }
+        };
+      }
+      container.appendChild(div);
+    });
+  }
 
-  document.getElementById('upgrade').onclick = () => {
-    if (score >= upPrice) {
-      score -= upPrice;
-      power *= 2;
-      upPrice = Math.floor(upPrice * 2.6);
-      updateStats();
-    }
-  };
-  document.getElementById('autoUp').onclick = () => {
-    if (score >= autoPrice) {
-      score -= autoPrice;
-      auto++;
-      autoPrice = Math.floor(autoPrice * 2.4);
-      updateStats();
-    }
-  };
+  // ================== ЭНЕРГИЯ И АВТОКЛИКЕР ==================
   setInterval(() => {
-    if (auto > 0) {
-      score += power * auto;
+    energy = Math.min(maxEnergy, energy + energyRegen);
+    updateStats();
+  }, 1000);
+
+  setInterval(() => {
+    if (auto > 0 && energy >= auto) {
+      energy -= auto;
+      let gain = power * auto * boostMultiplier * prestigeMultiplier;
+      let luckLevel = research.find(r => r.id === 'luck1').level;
+      if (Math.random() < 0.1 + luckLevel * 0.02) gain *= 1.5;
+      score += gain;
       updateStats();
     }
   }, 1000);
 
-  // сохранение / загрузка
+  // ================== КЛИК ==================
+  document.getElementById('click').onclick = (e) => {
+    ac.resume();
+    if (energy < 1) return;
+    energy -= 1;
+    clickSound();
+
+    let gain = power * boostMultiplier * prestigeMultiplier;
+    let energySaveLevel = research.find(r => r.id === 'energy1').level;
+    if (Math.random() < energySaveLevel * 0.05) energy += 1;
+    let critLevel = research.find(r => r.id === 'crit1').level;
+    if (Math.random() < critLevel * 0.05) gain *= 2;
+    let luckLevel = research.find(r => r.id === 'luck1').level;
+    if (Math.random() < 0.1 + luckLevel * 0.02) gain *= 1.5;
+    score += gain;
+    updateStats();
+    showFloatingNumber(e.clientX, e.clientY, '+' + Math.floor(gain));
+  };
+
+  document.getElementById('upgrade').onclick = () => {
+    if (score >= upPrice) { score -= upPrice; power *= 2; upPrice = Math.floor(upPrice * 2.6); updateStats(); }
+  };
+  document.getElementById('autoUp').onclick = () => {
+    if (score >= autoPrice) { score -= autoPrice; auto++; autoPrice = Math.floor(autoPrice * 2.4); updateStats(); }
+  };
+
+  // ================== ПРЕСТИЖ ==================
+  document.getElementById('prestigeBtn').onclick = () => {
+    if (score >= PRESTIGE_THRESHOLD) {
+      prestige++;
+      prestigeMultiplier = 1 + prestige * 0.05;
+      score = 0;
+      power = 1;
+      auto = 0;
+      upPrice = 100;
+      autoPrice = 500;
+      energy = maxEnergy;
+      research.forEach(r => r.level = 0);
+      energyRegen = 1;
+      maxEnergy = 100;
+      updateStats();
+      alert('Престиж получен! Множитель добычи теперь ' + prestigeMultiplier.toFixed(2) + 'x');
+    }
+  };
+
+  // ================== ПАДАЮЩИЕ АСТЕРОИДЫ ==================
+  function spawnFallingAsteroid() {
+    const isGolden = Math.random() < 0.3;
+    const asteroid = document.createElement('div');
+    asteroid.className = 'falling-asteroid' + (isGolden ? ' golden-asteroid' : '');
+    asteroid.style.left = Math.random() * window.innerWidth + 'px';
+    asteroid.style.top = '-60px';
+    asteroid.style.animationDuration = (4 + Math.random() * 4) + 's';
+    document.body.appendChild(asteroid);
+    asteroid.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isGolden) {
+        boostMultiplier = 10;
+        document.getElementById('boostIndicator').style.display = 'block';
+        setTimeout(() => { boostMultiplier = 1; document.getElementById('boostIndicator').style.display = 'none'; }, 5000);
+      } else {
+        let gain = 50 + Math.random() * 100;
+        let asteroidLevel = research.find(r => r.id === 'asteroid1').level;
+        gain *= (1 + asteroidLevel * 0.2);
+        score += gain;
+        showFloatingNumber(e.clientX, e.clientY, '+' + Math.floor(gain) + '💎');
+      }
+      asteroid.remove();
+    });
+    setTimeout(() => { if (asteroid.parentNode) asteroid.remove(); }, 10000);
+  }
+  setInterval(() => { if (Math.random() < 0.4) spawnFallingAsteroid(); }, 4000);
+
+  // ================== СЛУЧАЙНЫЕ СОБЫТИЯ ==================
+  function randomEvent() {
+    let r = Math.random();
+    if (r < 0.33) {
+      let gain = 500 + Math.random() * 1000;
+      score += gain;
+      showMessage('☄️ Метеоритный дождь! +' + Math.floor(gain) + ' ресурсов');
+    } else if (r < 0.66) {
+      let loss = Math.min(score, 200 + Math.random() * 300);
+      score -= loss;
+      showMessage('🔧 Поломка бура! Потеряно ' + Math.floor(loss) + ' ресурсов');
+    } else {
+      boostMultiplier = 5;
+      setTimeout(() => { boostMultiplier = 1; }, 10000);
+      showMessage('🏺 Найден артефакт! x5 на 10 сек');
+    }
+    updateStats();
+  }
+  function showMessage(text) {
+    const msg = document.createElement('div');
+    msg.className = 'event-message';
+    msg.innerText = text;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+  }
+  setInterval(randomEvent, 30000);
+
+  // ================== СОХРАНЕНИЕ ==================
   document.getElementById('saveBtn').onclick = () => {
-    localStorage.setItem('clickerData', JSON.stringify({
-      score, power, auto, upPrice, autoPrice, owned,
-      pcPos: pcItemPos, mobPos: mobItemPos
+    localStorage.setItem('miningPro', JSON.stringify({
+      score, power, auto, upPrice, autoPrice, owned, pcItemPos, mobItemPos,
+      energy, maxEnergy, energyRegen, prestige, research
     }));
-    alert('сохранено');
+    alert('Сохранено');
   };
   document.getElementById('loadBtn').onclick = () => {
-    const d = JSON.parse(localStorage.getItem('clickerData') || 'null');
-    if (!d) return alert('нет сохранения');
+    let d = JSON.parse(localStorage.getItem('miningPro') || 'null');
+    if (!d) return;
     score = d.score; power = d.power; auto = d.auto; upPrice = d.upPrice; autoPrice = d.autoPrice;
-    owned = d.owned || {};
-    pcItemPos = d.pcPos || {};
-    mobItemPos = d.mobPos || {};
+    owned = d.owned || {}; pcItemPos = d.pcPos || {}; mobItemPos = d.mobPos || {};
+    energy = d.energy; maxEnergy = d.maxEnergy; energyRegen = d.energyRegen; prestige = d.prestige;
+    if (d.research) d.research.forEach((r, i) => { if (research[i]) research[i].level = r.level; });
     updateStats();
-    // перестроить предметы
-    if (isMobile) {
-      document.getElementById('illuminator-content').innerHTML = ''; // канвас уже есть отдельно
-    } else {
-      document.getElementById('bgPcItems').innerHTML = '';
-    }
+    document.getElementById('bgPcItems').innerHTML = '';
+    document.getElementById('illuminator-content').innerHTML = '';
     Object.keys(owned).forEach(id => addItemToWorld(id, owned[id]));
     renderShop(document.getElementById('shopDesktop'));
     renderShop(document.getElementById('shopMobile'));
+    renderResearch(document.getElementById('researchDesktop'));
+    renderResearch(document.getElementById('researchMobile'));
   };
   document.getElementById('resetBtn').onclick = () => {
-    if (confirm('сброс?')) {
-      score=0; power=1; auto=0; upPrice=100; autoPrice=500; owned={}; pcItemPos={}; mobItemPos={};
+    if (confirm('Сброс?')) {
+      score = 0; power = 1; auto = 0; upPrice = 100; autoPrice = 500; owned = {}; pcItemPos = {}; mobItemPos = {};
+      energy = 100; maxEnergy = 100; energyRegen = 1; prestige = 0;
+      research.forEach(r => r.level = 0);
       updateStats();
-      if (isMobile) {
-        document.getElementById('illuminator-content').innerHTML = '';
-      } else {
-        document.getElementById('bgPcItems').innerHTML = '';
-      }
+      document.getElementById('bgPcItems').innerHTML = '';
+      document.getElementById('illuminator-content').innerHTML = '';
       renderShop(document.getElementById('shopDesktop'));
       renderShop(document.getElementById('shopMobile'));
+      renderResearch(document.getElementById('researchDesktop'));
+      renderResearch(document.getElementById('researchMobile'));
     }
   };
 
-  // --------------------------------------------------------------
-  // 10. Музыкальные кнопки
-  // --------------------------------------------------------------
+  // ================== МУЗЫКАЛЬНЫЕ КНОПКИ (20 штук) ==================
   function createMusicButtons() {
-    const containerPc = document.getElementById('musicDesktop');
-    const containerMob = document.getElementById('musicMobile');
-    const labels = ['☀️ Мелодия 1','🌙 Мелодия 2','🌀 Мелодия 3','📡 Мелодия 4','🎹 Мелодия 5',
-                    '🔮 Мелодия 6','⚡ Мелодия 7','🌌 Мелодия 8','🚀 Мелодия 9','🌟 ИНТЕРСТЕЛЛАР','🔇 Выкл.'];
-    for (let i = 0; i <= 10; i++) {
-      const idx = i === 10 ? 0 : i+1;
-      const btnPc = document.createElement('button');
-      btnPc.textContent = labels[i] || '🎵';
+    const contPc = document.getElementById('musicDesktop');
+    const contMob = document.getElementById('musicMobile');
+    for (let i = 0; i <= 20; i++) {
+      let idx = i === 20 ? 0 : i+1; // 21-я кнопка = выкл (индекс 0)
+      let label = i === 20 ? '🔇 Выкл' : `🎵 Трек ${i+1}`;
+      let btnPc = document.createElement('button');
+      btnPc.innerHTML = label;
       btnPc.onclick = () => { ac.resume(); changeMelody(idx); };
-      containerPc.appendChild(btnPc);
-
-      const btnMob = document.createElement('button');
-      btnMob.textContent = labels[i] || '🎵';
+      contPc.appendChild(btnPc);
+      let btnMob = document.createElement('button');
+      btnMob.innerHTML = label;
       btnMob.onclick = () => { ac.resume(); changeMelody(idx); };
-      containerMob.appendChild(btnMob);
+      contMob.appendChild(btnMob);
     }
   }
   createMusicButtons();
 
-  // --------------------------------------------------------------
-  // 11. Панели открыть/закрыть
-  // --------------------------------------------------------------
-  document.getElementById('toggleShopDesktop').onclick = () => {
-    document.getElementById('shopDesktop').classList.toggle('open');
-  };
-  document.getElementById('toggleMusicDesktop').onclick = () => {
-    document.getElementById('musicDesktop').classList.toggle('open');
-  };
+  // ================== ПАНЕЛИ ==================
+  document.getElementById('toggleShopDesktop').onclick = () => document.getElementById('shopDesktop').classList.toggle('open');
+  document.getElementById('toggleResearchDesktop').onclick = () => document.getElementById('researchDesktop').classList.toggle('open');
+  document.getElementById('toggleMusicDesktop').onclick = () => document.getElementById('musicDesktop').classList.toggle('open');
   document.getElementById('mobileShopBtn').onclick = () => {
     document.getElementById('mobileShopPanel').classList.toggle('open');
+    document.getElementById('mobileResearchPanel').classList.remove('open');
+    document.getElementById('mobileMusicPanel').classList.remove('open');
+    document.getElementById('mobileIlluminatorPanel').classList.remove('open');
+  };
+  document.getElementById('mobileResearchBtn').onclick = () => {
+    document.getElementById('mobileResearchPanel').classList.toggle('open');
+    document.getElementById('mobileShopPanel').classList.remove('open');
     document.getElementById('mobileMusicPanel').classList.remove('open');
     document.getElementById('mobileIlluminatorPanel').classList.remove('open');
   };
   document.getElementById('mobileMusicBtn').onclick = () => {
     document.getElementById('mobileMusicPanel').classList.toggle('open');
     document.getElementById('mobileShopPanel').classList.remove('open');
+    document.getElementById('mobileResearchPanel').classList.remove('open');
     document.getElementById('mobileIlluminatorPanel').classList.remove('open');
   };
   document.getElementById('mobileIlluminatorBtn').onclick = () => {
     document.getElementById('mobileIlluminatorPanel').classList.toggle('open');
     document.getElementById('mobileShopPanel').classList.remove('open');
+    document.getElementById('mobileResearchPanel').classList.remove('open');
     document.getElementById('mobileMusicPanel').classList.remove('open');
   };
 
-  // инициализация магазинов
+  // Инициализация
   renderShop(document.getElementById('shopDesktop'));
   renderShop(document.getElementById('shopMobile'));
+  renderResearch(document.getElementById('researchDesktop'));
+  renderResearch(document.getElementById('researchMobile'));
 
-  // небольшой хак: обновим размер канваса иллюминатора при ресайзе
   window.addEventListener('resize', () => {
-    if (illCanvas && viewport) {
-      illCanvas.width = viewport.clientWidth;
-      illCanvas.height = viewport.clientHeight;
+    if (illCanvas && document.getElementById('illuminator-viewport')) {
+      illCanvas.width = document.getElementById('illuminator-viewport').clientWidth;
+      illCanvas.height = document.getElementById('illuminator-viewport').clientHeight;
     }
   });
-  if (illCanvas && viewport) {
-    illCanvas.width = viewport.clientWidth;
-    illCanvas.height = viewport.clientHeight;
+  if (illCanvas && document.getElementById('illuminator-viewport')) {
+    illCanvas.width = document.getElementById('illuminator-viewport').clientWidth;
+    illCanvas.height = document.getElementById('illuminator-viewport').clientHeight;
+  }
+
+  function showFloatingNumber(x, y, text) {
+    let div = document.createElement('div');
+    div.className = 'floating-number';
+    div.textContent = text;
+    div.style.left = (x - 20) + 'px';
+    div.style.top = (y - 20) + 'px';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 1000);
   }
 })();
 </script>
