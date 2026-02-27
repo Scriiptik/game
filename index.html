@@ -8,36 +8,14 @@
 <style>
 html, body {
     margin: 0;
-    padding: 0;
     width: 100%;
     height: 100%;
-    background: #05070d;
+    background: #1c2130;
     font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     overflow: hidden;
 }
 
-/* Фон с графиками */
-#background {
-    position: fixed;
-    inset: 0;
-    background:
-        linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.9)),
-        repeating-linear-gradient(
-            to right,
-            rgba(0,255,150,0.15) 0px,
-            rgba(0,255,150,0.15) 1px,
-            transparent 1px,
-            transparent 80px
-        );
-    animation: moveGrid 20s linear infinite;
-}
-
-@keyframes moveGrid {
-    from { background-position: 0 0; }
-    to { background-position: 1000px 0; }
-}
-
-/* Canvas для графика */
+/* Canvas графика */
 canvas {
     position: fixed;
     inset: 0;
@@ -50,14 +28,14 @@ canvas {
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
-    color: white;
-    z-index: 10;
+    color: #ffffff;
+    z-index: 5;
 }
 
 #center h1 {
-    font-size: clamp(20px, 5vw, 42px);
-    letter-spacing: 1px;
+    font-size: clamp(22px, 4vw, 42px);
     margin: 0;
+    letter-spacing: 0.5px;
 }
 
 #center p {
@@ -73,40 +51,27 @@ canvas {
     right: 20px;
     font-size: 18px;
     font-weight: 600;
-    z-index: 10;
-}
-
-.positive { color: #00ff9c; }
-.negative { color: #ff4d4d; }
-
-/* Лёгкий шум */
-#noise {
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9;
+    color: #f4d36b;
+    z-index: 5;
 }
 </style>
 </head>
+
 <body>
 
-<div id="background"></div>
 <canvas id="chart"></canvas>
 
-<div id="pnl" class="positive">PNL: +$12,438.52</div>
+<div id="pnl">PNL: +$12,480.00</div>
 
 <div id="center">
     <h1>Сайт скрыт по желанию правообладателя</h1>
     <p>Access restricted</p>
 </div>
 
-<div id="noise"></div>
-
 <script>
-/* Рисуем псевдо-крипто график */
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
+const pnlEl = document.getElementById("pnl");
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -115,44 +80,68 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
+/* ДАННЫЕ PNL */
+let pnlValue = 12480;
 let points = [];
-for (let i = 0; i < 120; i++) {
-    points.push(Math.random());
+const maxPoints = 120;
+
+/* начальный рост */
+let value = canvas.height * 0.8;
+for (let i = 0; i < maxPoints; i++) {
+    value -= Math.random() * 2;
+    points.push(value);
 }
 
-function drawChart() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    /* фон */
+    ctx.fillStyle = "#1c2130";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    /* линия + заливка */
     ctx.beginPath();
-    ctx.strokeStyle = "rgba(0,255,150,0.8)";
-    ctx.lineWidth = 2;
-
-    points.shift();
-    points.push(Math.random());
-
-    points.forEach((v, i) => {
-        const x = (i / (points.length - 1)) * canvas.width;
-        const y = canvas.height * 0.6 - v * canvas.height * 0.3;
+    points.forEach((y, i) => {
+        const x = (i / (maxPoints - 1)) * canvas.width;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
     });
 
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.lineTo(0, canvas.height);
+    ctx.closePath();
+
+    ctx.fillStyle = "rgba(244, 211, 107, 0.25)";
+    ctx.fill();
+
+    ctx.beginPath();
+    points.forEach((y, i) => {
+        const x = (i / (maxPoints - 1)) * canvas.width;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+
+    ctx.strokeStyle = "#f4d36b";
+    ctx.lineWidth = 2;
     ctx.stroke();
-    requestAnimationFrame(drawChart);
 }
-drawChart();
 
-/* Анимация PNL */
-let pnl = 12438.52;
+/* Медленный рост PNL */
 setInterval(() => {
-    const delta = (Math.random() - 0.45) * 200;
-    pnl += delta;
+    const trend = Math.random() > 0.15 ? -Math.random() * 6 : Math.random() * 4;
+    const last = points[points.length - 1];
+    const next = Math.min(canvas.height * 0.85, Math.max(canvas.height * 0.2, last + trend));
 
-    const el = document.getElementById("pnl");
-    const sign = pnl >= 0 ? "+" : "-";
-    el.textContent = `PNL: ${sign}$${Math.abs(pnl).toFixed(2)}`;
-    el.className = pnl >= 0 ? "positive" : "negative";
-}, 1500);
+    points.push(next);
+    points.shift();
+
+    pnlValue += Math.random() > 0.2 ? Math.random() * 120 : -Math.random() * 40;
+    pnlEl.textContent = `PNL: +$${pnlValue.toFixed(2)}`;
+
+    draw();
+}, 600);
+
+draw();
 </script>
 
 </body>
