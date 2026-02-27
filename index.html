@@ -5,19 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>AR Линейка</title>
 
-<!-- PWA через data-url -->
-<link rel="manifest" href="data:application/json,{
-  &quot;name&quot;:&quot;AR Линейка&quot;,
-  &quot;short_name&quot;:&quot;Линейка&quot;,
-  &quot;start_url&quot;:&quot;.&quot;,
-  &quot;display&quot;:&quot;standalone&quot;,
-  &quot;background_color&quot;:&quot;#000000&quot;,
-  &quot;theme_color&quot;:&quot;#000000&quot;
-}">
 <meta name="theme-color" content="#000000">
 
 <style>
 * { box-sizing: border-box; }
+
 body {
     margin: 0;
     background: black;
@@ -26,13 +18,30 @@ body {
     touch-action: none;
 }
 
-video, canvas {
+video {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
     object-fit: cover;
+    background: black;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+#hint {
+    position: fixed;
+    top: 16px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    opacity: 0.85;
 }
 
 #ui {
@@ -46,7 +55,6 @@ video, canvas {
     border-radius: 18px;
     text-align: center;
     min-width: 220px;
-    backdrop-filter: blur(8px);
 }
 
 #value {
@@ -63,23 +71,12 @@ button {
     padding: 8px 14px;
     font-size: 14px;
 }
-button:active { transform: scale(0.96); }
-
-#hint {
-    position: fixed;
-    top: 16px;
-    width: 100%;
-    text-align: center;
-    color: white;
-    font-size: 14px;
-    opacity: 0.85;
-}
 </style>
 </head>
 
 <body>
 
-<video id="video" autoplay playsinline></video>
+<video id="video" playsinline></video>
 <canvas id="canvas"></canvas>
 
 <div id="hint">Коснись двух точек для измерения</div>
@@ -96,8 +93,7 @@ const ctx = canvas.getContext("2d");
 const value = document.getElementById("value");
 
 let points = [];
-let cmPerPixel = 0.026; 
-// 👆 Среднее значение. Для точности откалибруй (см. ниже)
+let cmPerPixel = 0.026; // калибровка вручную
 
 async function startCamera() {
     try {
@@ -105,20 +101,24 @@ async function startCamera() {
             video: { facingMode: { ideal: "environment" } },
             audio: false
         });
+
         video.srcObject = stream;
-    } catch {
-        alert("Разреши доступ к камере");
+
+        await video.play(); // ВАЖНО для iOS
+    } catch (e) {
+        alert("Не удалось включить камеру. Открой сайт через HTTPS.");
+        console.error(e);
     }
 }
+
 startCamera();
 
 function resize() {
-    canvas.width = innerWidth * devicePixelRatio;
-    canvas.height = innerHeight * devicePixelRatio;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
 resize();
-addEventListener("resize", resize);
+window.addEventListener("resize", resize);
 
 canvas.addEventListener("touchstart", e => {
     if (points.length === 2) return;
@@ -130,9 +130,9 @@ canvas.addEventListener("touchstart", e => {
 });
 
 function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const [a,b] = points;
+    const [a, b] = points;
 
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
@@ -141,9 +141,7 @@ function draw() {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    const px = Math.hypot(dx, dy);
+    const px = Math.hypot(a.x - b.x, a.y - b.y);
     const cm = (px * cmPerPixel).toFixed(1);
 
     ctx.fillStyle = "#ff3b30";
@@ -155,19 +153,8 @@ function draw() {
 
 function reset() {
     points = [];
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     value.textContent = "— см";
-}
-
-/* PWA Service Worker (встроенный) */
-if ("serviceWorker" in navigator) {
-    const sw = `
-        self.addEventListener("fetch", e => {
-            e.respondWith(fetch(e.request));
-        });
-    `;
-    const blob = new Blob([sw], { type: "text/javascript" });
-    navigator.serviceWorker.register(URL.createObjectURL(blob));
 }
 </script>
 
