@@ -1,187 +1,409 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Site Hidden</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сайт скрыт</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: #05070d;
-    font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-    overflow: hidden;
-}
+        body {
+            background: #0b0e14;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
 
-/* Фон с сеткой */
-#background {
-    position: fixed;
-    inset: 0;
-    background:
-        linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.9)),
-        repeating-linear-gradient(
-            to right,
-            rgba(0,255,150,0.12) 0px,
-            rgba(0,255,150,0.12) 1px,
-            transparent 1px,
-            transparent 80px
-        );
-    animation: moveGrid 25s linear infinite;
-}
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
 
-@keyframes moveGrid {
-    from { background-position: 0 0; }
-    to { background-position: 1200px 0; }
-}
+        /* Фоновый холст с графиками */
+        #crypto-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+            pointer-events: none; /* чтобы не мешал кликам (на всякий случай) */
+        }
 
-canvas {
-    position: fixed;
-    inset: 0;
-}
+        /* Слой с плавающими числами PnL */
+        #pnl-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none; /* чтобы сквозь них можно было взаимодействовать, если понадобится */
+            overflow: hidden;
+        }
 
-/* Центр */
-#center {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: white;
-    z-index: 10;
-}
+        .pnl-item {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(14px, 2.5vw, 28px);
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0.25;
+            text-shadow: 0 0 8px currentColor;
+            transition: opacity 0.3s ease;
+            animation: floatPnl 20s infinite alternate ease-in-out;
+            will-change: transform;
+        }
 
-#center h1 {
-    font-size: clamp(22px, 5vw, 42px);
-    margin: 0;
-    letter-spacing: 0.5px;
-}
+        .pnl-item.positive {
+            color: #00ff88;
+        }
 
-#center p {
-    margin-top: 10px;
-    font-size: 14px;
-    opacity: 0.6;
-}
+        .pnl-item.negative {
+            color: #ff4d4d;
+        }
 
-/* PNL */
-#pnl {
-    position: fixed;
-    top: 16px;
-    right: 20px;
-    font-size: 18px;
-    font-weight: 600;
-    color: #00ff9c;
-    z-index: 10;
-}
+        /* Лёгкое движение для оживления фона */
+        @keyframes floatPnl {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(15px, -15px); }
+        }
 
-/* Лёгкий шум */
-#noise {
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9;
-}
-</style>
+        /* Центральное сообщение */
+        #center-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: white;
+            font-size: clamp(24px, 6vw, 56px);
+            font-weight: 800;
+            padding: 0.8em 1.8em;
+            border-radius: 60px;
+            text-align: center;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 100px rgba(0, 255, 150, 0.2);
+            white-space: nowrap;
+        }
+
+        /* Очень маленькая адаптация для мобильных */
+        @media (max-width: 600px) {
+            #center-message {
+                white-space: normal;
+                font-size: 24px;
+                padding: 0.8em 1.2em;
+            }
+        }
+
+        /* Вторичный световой акцент */
+        #center-message span {
+            display: block;
+            font-size: 0.5em;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: #aaffdd;
+            margin-top: 8px;
+        }
+    </style>
 </head>
-
 <body>
+    <div id="container">
+        <!-- Canvas для крипто-графиков -->
+        <canvas id="crypto-canvas"></canvas>
 
-<div id="background"></div>
-<canvas id="chart"></canvas>
+        <!-- Контейнер с числами PnL -->
+        <div id="pnl-overlay"></div>
 
-<div id="pnl">PNL: +$12,438.52</div>
+        <!-- Главный текст по центру -->
+        <div id="center-message">
+            сайт скрыт
+            <span>по желанию правообладателя</span>
+        </div>
+    </div>
 
-<div id="center">
-    <h1>Сайт скрыт по желанию правообладателя</h1>
-    <p>Access restricted</p>
-</div>
+    <script>
+        (function() {
+            // --- НАСТРОЙКИ ---
+            const CANDLE_COUNT = 80;           // количество свечей на графике
+            const UPDATE_INTERVAL_MS = 300;     // интервал обновления графика (мс)
+            const PNL_UPDATE_INTERVAL = 2500;    // интервал обновления чисел PnL (мс)
+            const PNL_ITEMS_COUNT = 45;          // количество элементов PnL на фоне
 
-<div id="noise"></div>
+            // --- ПОЛУЧАЕМ ЭЛЕМЕНТЫ ---
+            const canvas = document.getElementById('crypto-canvas');
+            const ctx = canvas.getContext('2d');
+            const pnlContainer = document.getElementById('pnl-overlay');
 
-<script>
-/* Canvas */
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
+            // --- СОСТОЯНИЕ ГРАФИКА (случайное блуждание) ---
+            let candles = [];
+            let width, height;
 
-function resize() {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-}
-resize();
-addEventListener("resize", resize);
+            // Генерация первой свечи
+            function generateInitialCandles() {
+                let basePrice = 30000 + Math.random() * 10000; // случайная стартовая цена
+                for (let i = 0; i < CANDLE_COUNT; i++) {
+                    const open = basePrice;
+                    const close = open + (Math.random() - 0.5) * 1200; // изменение до 600
+                    const high = Math.max(open, close) + Math.random() * 600;
+                    const low = Math.min(open, close) - Math.random() * 600;
+                    candles.push({
+                        open: open,
+                        high: high,
+                        low: low,
+                        close: close
+                    });
+                    basePrice = close; // следующая открытие = предыдущее закрытие
+                }
+            }
+            generateInitialCandles();
 
-/* PNL данные */
-const POINTS = 140;
-let pnlValue = 12438.52;
+            // Обновление графика: сдвиг данных и добавление новой свечи
+            function updateCandles() {
+                // удаляем самую старую свечу
+                candles.shift();
 
-/* equity линия (растущая) */
-let values = [];
-let base = canvas.height * 0.8;
-for (let i = 0; i < POINTS; i++) {
-    base -= Math.random() * 1.2;
-    values.push(base);
-}
+                // берём последнюю свечу
+                const last = candles[candles.length - 1];
+                const newOpen = last.close;
 
-function drawChart() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // генерируем новое изменение (случайное блуждание с волатильностью)
+                const change = (Math.random() - 0.5) * 1200; // до 600 пунктов
+                const newClose = newOpen + change;
 
-    /* заливка */
-    ctx.beginPath();
-    values.forEach((y, i) => {
-        const x = (i / (POINTS - 1)) * canvas.width;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    });
+                const high = Math.max(newOpen, newClose) + Math.random() * 400;
+                const low = Math.min(newOpen, newClose) - Math.random() * 400;
 
-    ctx.lineTo(canvas.width, canvas.height);
-    ctx.lineTo(0, canvas.height);
-    ctx.closePath();
+                candles.push({
+                    open: newOpen,
+                    high: high,
+                    low: low,
+                    close: newClose
+                });
+            }
 
-    ctx.fillStyle = "rgba(0,255,150,0.22)";
-    ctx.fill();
+            // --- ФУНКЦИИ РИСОВАНИЯ ---
+            function drawGrid(w, h, stepX, stepY) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.lineWidth = 1;
 
-    /* линия */
-    ctx.beginPath();
-    values.forEach((y, i) => {
-        const x = (i / (POINTS - 1)) * canvas.width;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    });
+                // Вертикальные линии
+                for (let x = 0; x <= w; x += stepX) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h);
+                    ctx.strokeStyle = 'rgba(100, 200, 255, 0.06)';
+                    ctx.stroke();
+                }
 
-    ctx.strokeStyle = "#00ff9c";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}
+                // Горизонтальные линии
+                for (let y = 0; y <= h; y += stepY) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+                    ctx.stroke();
+                }
+            }
 
-/* рост */
-setInterval(() => {
-    const last = values[values.length - 1];
+            function drawCandles() {
+                if (!candles.length) return;
 
-    /* активный рост + редкие откаты */
-    const delta = Math.random() > 0.12
-        ? -Math.random() * 5
-        : Math.random() * 3;
+                // Находим мин и макс для масштабирования
+                let minPrice = Math.min(...candles.map(c => c.low)) * 0.998;
+                let maxPrice = Math.max(...candles.map(c => c.high)) * 1.002;
+                const range = maxPrice - minPrice;
 
-    const next = Math.min(
-        canvas.height * 0.85,
-        Math.max(canvas.height * 0.25, last + delta)
-    );
+                // Размеры области графика
+                const graphHeight = height * 0.8; // оставляем отступы сверху/снизу
+                const topMargin = height * 0.1;
+                const bottomMargin = height * 0.1;
 
-    values.push(next);
-    values.shift();
+                const candleWidth = (width / candles.length) * 0.7;
+                const padding = (width / candles.length) * 0.15; // расстояние между свечами
 
-    pnlValue += Math.random() * 120;
-    document.getElementById("pnl").textContent =
-        `PNL: +$${pnlValue.toFixed(2)}`;
+                ctx.lineWidth = 1.5;
 
-    drawChart();
-}, 700);
+                for (let i = 0; i < candles.length; i++) {
+                    const c = candles[i];
+                    const x = i * (width / candles.length) + (width / candles.length) * 0.15;
 
-drawChart();
-</script>
+                    // Масштабирование цен в координаты Y
+                    const yHigh = topMargin + (maxPrice - c.high) / range * graphHeight;
+                    const yLow = topMargin + (maxPrice - c.low) / range * graphHeight;
+                    const yOpen = topMargin + (maxPrice - c.open) / range * graphHeight;
+                    const yClose = topMargin + (maxPrice - c.close) / range * graphHeight;
 
+                    // Определяем цвет (бычья/медвежья свеча)
+                    const isBull = c.close >= c.open;
+                    ctx.fillStyle = isBull ? 'rgba(0, 255, 150, 0.4)' : 'rgba(255, 80, 80, 0.5)';
+                    ctx.strokeStyle = isBull ? '#00ff99' : '#ff5e5e';
+                    ctx.lineWidth = 1.2;
+
+                    // Рисуем фитиль (high-low)
+                    ctx.beginPath();
+                    ctx.moveTo(x + candleWidth / 2, yHigh);
+                    ctx.lineTo(x + candleWidth / 2, yLow);
+                    ctx.strokeStyle = isBull ? '#aaffaa' : '#ffaaaa';
+                    ctx.stroke();
+
+                    // Рисуем тело свечи (open-close)
+                    const bodyTop = Math.min(yOpen, yClose);
+                    const bodyBottom = Math.max(yOpen, yClose);
+                    const bodyHeight = bodyBottom - bodyTop;
+
+                    ctx.fillRect(x, bodyTop, candleWidth, bodyHeight);
+                    // обводка тела
+                    ctx.strokeStyle = isBull ? '#00cc88' : '#cc5555';
+                    ctx.strokeRect(x, bodyTop, candleWidth, bodyHeight);
+                }
+
+                // Дополнительно рисуем скользящую среднюю (для красоты)
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+                ctx.lineWidth = 2.5;
+                for (let i = 1; i < candles.length; i++) {
+                    const c = candles[i];
+                    const prev = candles[i - 1];
+                    const x1 = (i - 1) * (width / candles.length) + (width / candles.length) * 0.15 + candleWidth / 2;
+                    const x2 = i * (width / candles.length) + (width / candles.length) * 0.15 + candleWidth / 2;
+                    const y1 = topMargin + (maxPrice - prev.close) / range * graphHeight;
+                    const y2 = topMargin + (maxPrice - c.close) / range * graphHeight;
+                    if (i === 1) ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                }
+                ctx.stroke();
+            }
+
+            function drawBackground() {
+                // Заливка фона (тёмный градиент)
+                const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                gradient.addColorStop(0, '#0a0f18');
+                gradient.addColorStop(1, '#141b26');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
+
+                // Сетка
+                drawGrid(width, height, 60, 40);
+
+                // Рисуем свечи
+                drawCandles();
+
+                // Добавляем немного "шума" (пиксельные точки)
+                ctx.fillStyle = 'rgba(180, 240, 255, 0.03)';
+                for (let i = 0; i < 100; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * width, Math.random() * height, Math.random() * 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            // --- ОБРАБОТКА РАЗМЕРОВ ---
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                drawBackground();
+            }
+
+            // --- АНИМАЦИЯ ГРАФИКА (периодическое обновление) ---
+            function animateGraph() {
+                updateCandles();       // новые данные
+                drawBackground();      // перерисовка
+            }
+
+            // --- СОЗДАНИЕ PnL ЭЛЕМЕНТОВ ---
+            function createPnlItems() {
+                pnlContainer.innerHTML = ''; // очистка
+                for (let i = 0; i < PNL_ITEMS_COUNT; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'pnl-item';
+
+                    // случайное положение (проценты, чтобы адаптировалось)
+                    item.style.top = Math.random() * 100 + '%';
+                    item.style.left = Math.random() * 100 + '%';
+
+                    // случайное смещение анимации, чтобы двигались не синхронно
+                    const duration = 15 + Math.random() * 20;
+                    const delay = Math.random() * 5;
+                    item.style.animation = `floatPnl ${duration}s infinite alternate ease-in-out ${delay}s`;
+
+                    // определим знак и значение
+                    const sign = Math.random() > 0.5 ? 1 : -1;
+                    const value = (Math.random() * 5000 + 50).toFixed(2);
+                    const formattedValue = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+                    const signChar = sign === 1 ? '+' : '-';
+                    item.textContent = `${signChar}$${formattedValue}`;
+
+                    // класс для цвета
+                    if (sign === 1) {
+                        item.classList.add('positive');
+                    } else {
+                        item.classList.add('negative');
+                    }
+
+                    pnlContainer.appendChild(item);
+                }
+            }
+
+            // --- ОБНОВЛЕНИЕ ЗНАЧЕНИЙ PNL (чтобы фон менялся) ---
+            function updatePnlValues() {
+                const items = document.querySelectorAll('.pnl-item');
+                items.forEach(item => {
+                    // случайно меняем знак и значение
+                    const sign = Math.random() > 0.4 ? 1 : -1; // больше положительных для оптимизма
+                    const value = (Math.random() * 7000 + 100).toFixed(2);
+                    const formattedValue = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+                    const signChar = sign === 1 ? '+' : '-';
+                    item.textContent = `${signChar}$${formattedValue}`;
+
+                    // обновляем класс цвета
+                    if (sign === 1) {
+                        item.classList.add('positive');
+                        item.classList.remove('negative');
+                    } else {
+                        item.classList.add('negative');
+                        item.classList.remove('positive');
+                    }
+                });
+            }
+
+            // --- ЗАПУСК ---
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                // перерисовываем после ресайза
+                drawBackground();
+            });
+
+            // Инициализация
+            resizeCanvas();
+            createPnlItems();
+
+            // Запускаем периодическое обновление графика
+            setInterval(animateGraph, UPDATE_INTERVAL_MS);
+
+            // Запускаем периодическое обновление PnL чисел
+            setInterval(updatePnlValues, PNL_UPDATE_INTERVAL);
+
+            // Для красоты добавим плавное появление элементов (лёгкий transition)
+            setTimeout(() => {
+                document.querySelectorAll('.pnl-item').forEach(el => {
+                    el.style.opacity = '0.25';
+                });
+            }, 100);
+        })();
+    </script>
 </body>
 </html>
