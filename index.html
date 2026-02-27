@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Сайт скрыт (мегаполис)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Сайт скрыт (light mobile)</title>
     <style>
         * {
             margin: 0;
@@ -17,7 +17,7 @@
             background: #0a0c10;
             overflow: hidden;
             font-family: 'Segoe UI', 'Arial', sans-serif;
-            touch-action: manipulation;
+            touch-action: pan-y pinch-zoom; /* разрешаем только вертикальный скролл/зум */
         }
 
         #container {
@@ -35,6 +35,8 @@
             display: block;
             z-index: 1;
             pointer-events: none;
+            /* оптимизация для мобильных: снижаем качество ради производительности */
+            image-rendering: crisp-edges; /* или auto, но не smooth */
         }
 
         #pnl-overlay {
@@ -46,6 +48,7 @@
             z-index: 5;
             pointer-events: none;
             overflow: hidden;
+            /* отключаем сложные анимации на мобильных по умолчанию, включим только если мощное устройство */
         }
 
         .pnl-item {
@@ -56,18 +59,21 @@
             white-space: nowrap;
             opacity: 0.3;
             text-shadow: 0 0 8px currentColor;
-            animation: floatPnl 20s infinite alternate ease-in-out;
-            will-change: transform;
-            mix-blend-mode: screen;
+            /* убираем анимацию движения, оставляем только мерцание цвета */
+            transition: opacity 0.3s;
+            will-change: transform; /* готовим, но анимация отключена */
+        }
+
+        /* для мобильных отключаем анимацию float */
+        @media (max-width: 768px) {
+            .pnl-item {
+                animation: none !important;
+                transform: none !important;
+            }
         }
 
         .pnl-item.positive { color: #00ffaa; }
         .pnl-item.negative { color: #ff5e7d; }
-
-        @keyframes floatPnl {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(20px, -20px); }
-        }
 
         #center-message {
             position: absolute;
@@ -203,11 +209,14 @@
 
     <script>
         (function() {
-            // ---------- НАСТРОЙКИ ----------
-            const CANDLE_COUNT = 60;          // меньше для производительности
-            const UPDATE_INTERVAL_MS = 400;
-            const PNL_UPDATE_INTERVAL = 2500;
-            const PNL_ITEMS_COUNT = 35;
+            // ---------- ОПТИМИЗИРОВАННЫЕ НАСТРОЙКИ ДЛЯ МОБИЛЬНЫХ ----------
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            // Уменьшаем нагрузку на мобильных
+            const CANDLE_COUNT = isMobile ? 20 : 50;           // меньше свечей
+            const UPDATE_INTERVAL_MS = isMobile ? 1200 : 400;  // реже обновление
+            const PNL_UPDATE_INTERVAL = isMobile ? 5000 : 2500;
+            const PNL_ITEMS_COUNT = isMobile ? 12 : 30;        // меньше чисел
 
             const canvas = document.getElementById('crypto-canvas');
             const ctx = canvas.getContext('2d');
@@ -216,7 +225,7 @@
             let candles = [];
             let width, height;
 
-            // ---------- ГЕНЕРАЦИЯ СВЕЧЕЙ (без изменений) ----------
+            // ---------- ГЕНЕРАЦИЯ СВЕЧЕЙ ----------
             function generateInitialCandles() {
                 let basePrice = 30000 + Math.random() * 10000;
                 for (let i = 0; i < CANDLE_COUNT; i++) {
@@ -241,30 +250,28 @@
                 candles.push({ open: newOpen, high, low, close: newClose });
             }
 
-            // ---------- ГОРОД (новый фон) ----------
+            // ---------- ГОРОД (упрощённый для мобильных) ----------
             let buildings = [];
 
             function generateBuildings(w, h) {
-                const count = 40 + Math.floor(Math.random() * 20);
+                const count = isMobile ? 15 : 40; // меньше зданий на моб
                 buildings = [];
-                const groundY = h * 0.85; // линия земли
+                const groundY = h * 0.85;
                 for (let i = 0; i < count; i++) {
-                    const width = 15 + Math.random() * 40;
-                    const x = (i / count) * w + (Math.random() * 30 - 15); // разброс
-                    const height = 50 + Math.random() * 250;
+                    const width = 15 + Math.random() * 30;
+                    const x = (i / count) * w + (Math.random() * 20 - 10);
+                    const height = 50 + Math.random() * (isMobile ? 150 : 250);
                     buildings.push({
                         x: x,
                         width: width,
                         height: height,
-                        windows: []
                     });
                 }
-                // сортируем по x для порядка рисования (дальние сначала)
                 buildings.sort((a, b) => a.x - b.x);
             }
 
             function drawCity() {
-                // небо градиент
+                // небо
                 const gradient = ctx.createLinearGradient(0, 0, 0, height);
                 gradient.addColorStop(0, '#0a1525');
                 gradient.addColorStop(0.6, '#141e2f');
@@ -272,52 +279,53 @@
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, width, height);
 
-                // линия горизонта (легкая дымка)
+                // линия горизонта
                 ctx.fillStyle = 'rgba(30, 40, 60, 0.3)';
                 ctx.fillRect(0, height * 0.8, width, height * 0.2);
 
-                // здания
+                // здания (без окон на мобильных)
                 buildings.forEach(b => {
                     const x = b.x;
                     const yBase = height * 0.85;
                     const h = b.height;
 
-                    // силуэт
                     ctx.fillStyle = '#1b2333';
                     ctx.shadowColor = '#2a3f5e';
-                    ctx.shadowBlur = 15;
+                    ctx.shadowBlur = 10;
                     ctx.fillRect(x, yBase - h, b.width, h);
 
-                    // окна
-                    ctx.shadowBlur = 8;
-                    ctx.fillStyle = '#ffdd77';
-                    const windowRows = Math.floor(h / 20);
-                    const windowCols = Math.floor(b.width / 12);
-                    for (let r = 0; r < windowRows; r++) {
-                        for (let c = 0; c < windowCols; c++) {
-                            if (Math.random() > 0.4) { // часть окон горит
-                                ctx.globalAlpha = 0.5 + Math.random() * 0.5;
-                                ctx.fillRect(
-                                    x + c * 12 + 4,
-                                    yBase - h + r * 20 + 6,
-                                    5,
-                                    10
-                                );
+                    // окна рисуем только если не мобильный и не слишком много
+                    if (!isMobile) {
+                        ctx.shadowBlur = 5;
+                        ctx.fillStyle = '#ffdd77';
+                        const windowRows = Math.floor(h / 20);
+                        const windowCols = Math.floor(b.width / 12);
+                        for (let r = 0; r < windowRows; r++) {
+                            for (let c = 0; c < windowCols; c++) {
+                                if (Math.random() > 0.5) {
+                                    ctx.globalAlpha = 0.5 + Math.random() * 0.5;
+                                    ctx.fillRect(
+                                        x + c * 12 + 4,
+                                        yBase - h + r * 20 + 6,
+                                        5,
+                                        10
+                                    );
+                                }
                             }
                         }
                     }
-                    ctx.shadowBlur = 0;
-                    ctx.globalAlpha = 1.0;
                 });
 
-                // передний план (дорога)
-                ctx.fillStyle = '#0f1219';
+                // дорога
                 ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1.0;
+                ctx.fillStyle = '#0f1219';
                 ctx.fillRect(0, height * 0.85, width, height * 0.15);
 
-                // огни машин (мелкие точки)
+                // огни машин (меньше на мобильных)
                 ctx.fillStyle = '#ffaa33';
-                for (let i = 0; i < 30; i++) {
+                const carLights = isMobile ? 10 : 30;
+                for (let i = 0; i < carLights; i++) {
                     ctx.globalAlpha = 0.4 + Math.random() * 0.5;
                     ctx.beginPath();
                     ctx.arc(Math.random() * width, height * 0.87 + Math.random() * 20, 2 + Math.random() * 4, 0, 2 * Math.PI);
@@ -326,7 +334,7 @@
                 ctx.globalAlpha = 1.0;
             }
 
-            // ---------- ОТРИСОВКА СВЕЧЕЙ поверх города (полупрозрачные) ----------
+            // ---------- ОТРИСОВКА СВЕЧЕЙ (упрощённая) ----------
             function drawCandlesOnCity() {
                 if (!candles.length) return;
                 let minPrice = Math.min(...candles.map(c => c.low)) * 0.998;
@@ -347,9 +355,8 @@
 
                     const isBull = c.close >= c.open;
 
-                    // полупрозрачные линии и тела
                     ctx.globalAlpha = 0.4;
-                    ctx.lineWidth = 1.5;
+                    ctx.lineWidth = 1.2;
 
                     // фитиль
                     ctx.beginPath();
@@ -368,41 +375,42 @@
                     ctx.strokeRect(x, bodyTop, candleWidth, bodyHeight);
                 }
 
-                // скользящая средняя (более яркая)
-                ctx.globalAlpha = 0.8;
-                ctx.beginPath();
-                ctx.strokeStyle = '#ffcc00';
-                ctx.lineWidth = 2.5;
-                for (let i = 1; i < candles.length; i++) {
-                    const c = candles[i];
-                    const prev = candles[i - 1];
-                    const x1 = (i - 1) * (width / candles.length) + (width / candles.length) * 0.2 + candleWidth / 2;
-                    const x2 = i * (width / candles.length) + (width / candles.length) * 0.2 + candleWidth / 2;
-                    const y1 = topMargin + (maxPrice - prev.close) / range * graphHeight;
-                    const y2 = topMargin + (maxPrice - c.close) / range * graphHeight;
-                    if (i === 1) ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
+                // скользящая средняя (опционально, можно отключить на мобильных)
+                if (!isMobile) {
+                    ctx.globalAlpha = 0.8;
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#ffcc00';
+                    ctx.lineWidth = 2;
+                    for (let i = 1; i < candles.length; i++) {
+                        const c = candles[i];
+                        const prev = candles[i - 1];
+                        const x1 = (i - 1) * (width / candles.length) + (width / candles.length) * 0.2 + candleWidth / 2;
+                        const x2 = i * (width / candles.length) + (width / candles.length) * 0.2 + candleWidth / 2;
+                        const y1 = topMargin + (maxPrice - prev.close) / range * graphHeight;
+                        const y2 = topMargin + (maxPrice - c.close) / range * graphHeight;
+                        if (i === 1) ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                    }
+                    ctx.stroke();
                 }
-                ctx.stroke();
                 ctx.globalAlpha = 1.0;
             }
 
             function drawScene() {
-                // Очистка и город
                 drawCity();
-                // Поверх свечи
                 drawCandlesOnCity();
 
-                // Добавим звезды/небо (мелкие точки)
+                // звезды (меньше на мобильных)
                 ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                for (let i = 0; i < 50; i++) {
+                const stars = isMobile ? 15 : 40;
+                for (let i = 0; i < stars; i++) {
                     ctx.beginPath();
                     ctx.arc(Math.random() * width, Math.random() * height * 0.6, 1 + Math.random() * 2, 0, 2 * Math.PI);
                     ctx.fill();
                 }
             }
 
-            // ---------- АДАПТАЦИЯ ПОД РАЗМЕР ----------
+            // ---------- РАБОТА С РАЗМЕРОМ ----------
             function resizeCanvas() {
                 width = window.innerWidth;
                 height = window.innerHeight;
@@ -412,12 +420,22 @@
                 drawScene();
             }
 
-            function animateGraph() {
-                updateCandles();
-                drawScene();
+            let animationFrame = null;
+            let lastUpdate = 0;
+
+            function animateGraph(timestamp) {
+                if (!lastUpdate || timestamp - lastUpdate > UPDATE_INTERVAL_MS) {
+                    updateCandles();
+                    drawScene();
+                    lastUpdate = timestamp;
+                }
+                animationFrame = requestAnimationFrame(animateGraph);
             }
 
-            // ---------- PnL элементы ----------
+            // Запускаем анимацию через requestAnimationFrame вместо setInterval (плавнее и эффективнее)
+            animationFrame = requestAnimationFrame(animateGraph);
+
+            // ---------- PnL элементы (статичные на мобильных) ----------
             function createPnlItems() {
                 pnlContainer.innerHTML = '';
                 for (let i = 0; i < PNL_ITEMS_COUNT; i++) {
@@ -425,9 +443,13 @@
                     item.className = 'pnl-item';
                     item.style.top = Math.random() * 100 + '%';
                     item.style.left = Math.random() * 100 + '%';
-                    const duration = 15 + Math.random() * 20;
-                    const delay = Math.random() * 5;
-                    item.style.animation = `floatPnl ${duration}s infinite alternate ease-in-out ${delay}s`;
+
+                    // на мобильных не используем анимацию движения
+                    if (!isMobile) {
+                        const duration = 15 + Math.random() * 20;
+                        const delay = Math.random() * 5;
+                        item.style.animation = `floatPnl ${duration}s infinite alternate ease-in-out ${delay}s`;
+                    }
 
                     const sign = Math.random() > 0.5 ? 1 : -1;
                     const value = (Math.random() * 5000 + 50).toFixed(2);
@@ -467,10 +489,9 @@
 
             resizeCanvas();
             createPnlItems();
-            setInterval(animateGraph, UPDATE_INTERVAL_MS);
             setInterval(updatePnlValues, PNL_UPDATE_INTERVAL);
 
-            // ---------- ЗВУК (кросс-платформенный, синтезированный) ----------
+            // ---------- ЗВУК (короткий, без лишних осцилляторов для мобильных) ----------
             let audioCtx = null;
 
             function playSound() {
@@ -480,66 +501,32 @@
                     }
                     if (audioCtx.state === 'suspended') {
                         audioCtx.resume().then(() => {
-                            createComplexSound();
+                            createSimpleSound();
                         }).catch(e => console.warn('AudioContext resume error', e));
                     } else {
-                        createComplexSound();
+                        createSimpleSound();
                     }
                 } catch (e) {
                     console.warn('Web Audio not supported', e);
                 }
             }
 
-            function createComplexSound() {
+            function createSimpleSound() {
                 if (!audioCtx) return;
-
                 const now = audioCtx.currentTime;
 
-                // Низкий удар (основной)
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.type = 'sawtooth';
-                osc1.frequency.value = 90;
-                gain1.gain.setValueAtTime(0, now);
-                gain1.gain.linearRampToValueAtTime(0.7, now + 0.02);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-
-                // Второй тон (призвук)
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.type = 'triangle';
-                osc2.frequency.value = 140;
-                gain2.gain.setValueAtTime(0, now);
-                gain2.gain.linearRampToValueAtTime(0.4, now + 0.01);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-
-                // Шум (короткий всплеск)
-                const bufferSize = 4096;
-                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                const output = noiseBuffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                const whiteNoise = audioCtx.createBufferSource();
-                whiteNoise.buffer = noiseBuffer;
-                const gainNoise = audioCtx.createGain();
-                gainNoise.gain.setValueAtTime(0, now);
-                gainNoise.gain.linearRampToValueAtTime(0.2, now + 0.01);
-                gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                whiteNoise.connect(gainNoise);
-                gainNoise.connect(audioCtx.destination);
-
-                osc1.start(now);
-                osc2.start(now);
-                whiteNoise.start(now);
-
-                osc1.stop(now + 0.3);
-                osc2.stop(now + 0.25);
-                whiteNoise.stop(now + 0.15);
+                // один осциллятор с коротким затуханием (меньше нагрузки)
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.value = 100;
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
             }
 
             // ---------- КРИК (одна надпись) ----------
@@ -563,30 +550,23 @@
             }
 
             function showShout(e) {
-                // предотвращаем двойные срабатывания на touch и click
                 e.preventDefault?.();
 
-                // Тряска
                 centerMsg.classList.add('shake');
                 setTimeout(() => {
                     centerMsg.classList.remove('shake');
                 }, 500);
 
-                // Звук
                 playSound();
 
-                // Удалить предыдущие надписи
                 shoutOverlay.innerHTML = '';
 
-                // Создать одну большую надпись
                 const shout = document.createElement('div');
                 shout.className = 'shout-single';
 
                 const randomIndex = Math.floor(Math.random() * shoutPhrases.length);
                 shout.textContent = shoutPhrases[randomIndex];
-
                 shout.style.color = getRandomColor();
-
                 const angle = (Math.random() * 60) - 30;
                 shout.style.setProperty('--rot', angle + 'deg');
 
@@ -597,7 +577,6 @@
                 }, 2500);
             }
 
-            // Обработчики событий (мышь + тач)
             centerMsg.addEventListener('click', showShout);
             centerMsg.addEventListener('touchstart', showShout, { passive: false });
         })();
